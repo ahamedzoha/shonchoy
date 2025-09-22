@@ -4,6 +4,11 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:web": "turbo run dev --filter=react-app",
+    "dev:landing": "turbo run dev --filter=landing",
+    "dev:api": "turbo run dev --filter=api",
+    "start": "turbo run start",
+    "start:api": "turbo run start --filter=api",
     "lint": "turbo run lint",
     "check-types": "turbo run check-types",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""

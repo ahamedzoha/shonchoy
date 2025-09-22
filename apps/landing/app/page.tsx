@@ -111,7 +111,6 @@ export default function Page() {
             {description}
           </Card>
         ))}
-        <Test />
       </div>
     </main>
   );
