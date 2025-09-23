@@ -1,17 +1,20 @@
-import { useState } from "react";
+import { useState } from 'react';
 
-import "./App.css";
-import { Card } from "@repo/ui/card";
+import { ButtonX } from '@repo/ui/button';
+import { Card } from '@repo/ui/card';
+
+import './App.css';
 
 function App() {
   const [count, setCount] = useState(0);
 
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center h-screen">
       <div className="flex flex-col items-center justify-center">
         <Card title="Vitex" href="https://vite.dev">
           This is a card
         </Card>
+        <ButtonX />
       </div>
       --------------------------------
       <h1>Vite + React</h1>

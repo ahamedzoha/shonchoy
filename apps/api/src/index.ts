@@ -1,9 +1,10 @@
-import express from "express";
-import cors from "cors";
-import helmet from "helmet";
-import compression from "compression";
+import compression from 'compression';
+import cors from 'cors';
+import express from 'express';
+import helmet from 'helmet';
 
 const app = express();
+// eslint-disable-next-line turbo/no-undeclared-env-vars
 const PORT = process.env.PORT || 3002;
 
 // Middleware
@@ -14,31 +15,31 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.get("/", (req, res) => {
+app.get('/', (req, res) => {
   res.json({
-    message: "Shonchoy API Server",
-    version: "1.0.0",
+    message: 'Shonchoy API Server',
+    version: '1.0.0',
     timestamp: new Date().toISOString(),
   });
 });
 
-app.get("/api/health", (req, res) => {
+app.get('/api/health', (req, res) => {
   res.json({
-    status: "healthy",
+    status: 'healthy',
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
   });
 });
 
 // Sample API routes
-app.get("/api/users", (req, res) => {
+app.get('/api/users', (req, res) => {
   res.json([
-    { id: 1, name: "John Doe", email: "john@example.com" },
-    { id: 2, name: "Jane Smith", email: "jane@example.com" },
+    { id: 1, name: 'John Doe', email: 'john@example.com' },
+    { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
   ]);
 });
 
-app.post("/api/users", (req, res) => {
+app.post('/api/users', (req, res) => {
   const { name, email } = req.body;
   const newUser = {
     id: Date.now(),
@@ -50,20 +51,22 @@ app.post("/api/users", (req, res) => {
 });
 
 // 404 handler
-app.use("*", (req, res) => {
-  res.status(404).json({ error: "Route not found" });
+app.use('*', (req, res) => {
+  res.status(404).json({ error: 'Route not found' });
 });
 
 // Error handler
 app.use(
   (
-    err: any,
+    err: unknown & { stack?: string },
     req: express.Request,
     res: express.Response,
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     next: express.NextFunction
   ) => {
-    console.error(err.stack);
-    res.status(500).json({ error: "Something went wrong!" });
+    console.error(err?.stack ?? 'Unknown error');
+    res.status(500).json({ error: 'Something went wrong!' });
   }
 );
 
