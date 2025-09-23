@@ -80,3 +80,9 @@ coverage/
 # OS
 .DS_Store
 Thumbs.db
+
+# TS Config BuildInfos
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+/apps/*/tsconfig.tsbuildinfo
+/packages/*/tsconfig.tsbuildinfo
