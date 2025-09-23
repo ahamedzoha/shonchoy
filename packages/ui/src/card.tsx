@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
 export function Card({
   title,
@@ -17,7 +17,7 @@ export function Card({
       target="_blank"
     >
       <h2 className="mb-3 text-3xl font-semibold">
-        {title}{' '}
+        {title}{" "}
         <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
           -&gt;
         </span>
