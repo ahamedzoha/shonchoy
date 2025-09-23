@@ -14,6 +14,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
+    "@parcel/watcher": "^2.5.1",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "prettier": "^3.6.2",
     "prettier-plugin-organize-imports": "^4.3.0",

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 export function Card({
   title,
@@ -11,13 +11,13 @@ export function Card({
 }) {
   return (
     <a
-      className="group rounded-lg border border-transparent px-5 py-4 transition-colors !hover:border-neutral-700 hover:bg-neutral-800/30"
+      className="card-base card-hover"
       href={`${href}?utm_source=create-turbo&utm_medium=with-tailwind&utm_campaign=create-turbo"`}
       rel="noopener noreferrer"
       target="_blank"
     >
       <h2 className="mb-3 text-3xl font-semibold">
-        {title}{" "}
+        {title}{' '}
         <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
           -&gt;
         </span>

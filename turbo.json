@@ -5,13 +5,7 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [
-        "build/**",
-        ".vercel/**",
-        "dist/**",
-        ".next/**",
-        "!.next/cache/**"
-      ]
+      "outputs": ["build/**", ".vercel/**", "dist/**", ".next/**", "!.next/cache/**"]
     },
     "lint": {
       "dependsOn": ["^build", "^lint"]
@@ -23,6 +17,11 @@
       "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
+    },
+    "build:design-system": {
+      "dependsOn": [],
+      "inputs": ["src/**/*.css", "tailwind.config.js"],
+      "outputs": ["dist/**"]
     },
     "start": {
       "dependsOn": ["build"],

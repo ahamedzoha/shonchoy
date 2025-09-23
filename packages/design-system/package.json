@@ -1,0 +1,20 @@
+{
+  "name": "@repo/design-system",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./dist/design-system.css"
+  },
+  "scripts": {
+    "build": "tailwindcss -i ./src/design-system.css -o ./dist/design-system.css --minify",
+    "build:dev": "tailwindcss -i ./src/design-system.css -o ./dist/design-system.css --watch",
+    "dev": "npm run build:dev"
+  },
+  "dependencies": {
+    "tailwindcss": "^4.1.13"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.13"
+  }
+}

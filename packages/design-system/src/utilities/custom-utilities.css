@@ -1,0 +1,56 @@
+/* Custom utility classes */
+
+/* Text utilities */
+.text-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--color-blue-1000),
+    var(--color-purple-1000)
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Layout utilities */
+.container-responsive {
+  max-width: var(--container-7xl);
+  margin-inline: auto;
+  padding-inline: calc(var(--spacing) * 4);
+}
+
+@media (min-width: 40rem) {
+  .container-responsive {
+    padding-inline: calc(var(--spacing) * 6);
+  }
+}
+
+@media (min-width: 64rem) {
+  .container-responsive {
+    padding-inline: calc(var(--spacing) * 8);
+  }
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Animation utilities */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Additional custom utilities can be added here */

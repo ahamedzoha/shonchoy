@@ -2,6 +2,7 @@
   "extends": ["//"],
   "tasks": {
     "build": {
+      "inputs": ["src/**/*.css", "tailwind.config.js"],
       "outputs": ["dist/**"]
     },
     "dev": {

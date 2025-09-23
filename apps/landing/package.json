@@ -11,6 +11,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@repo/design-system": "*",
     "@repo/ui": "*",
     "next": "^15.4.2",
     "react": "^19.1.0",
@@ -19,16 +20,11 @@
   "devDependencies": {
     "@next/eslint-plugin-next": "^15.4.6",
     "@repo/eslint-config": "*",
-    "@repo/tailwind-config": "*",
     "@repo/typescript-config": "*",
-    "@tailwindcss/postcss": "^4.1.13",
     "@types/node": "^22.15.30",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.1",
-    "autoprefixer": "^10.4.20",
     "eslint": "^9.33.0",
-    "postcss": "^8.5.3",
-    "tailwindcss": "^4.1.13",
     "typescript": "5.9.2"
   }
 }

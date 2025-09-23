@@ -18,7 +18,10 @@ function App() {
       </div>
       --------------------------------
       <h1>Vite + React</h1>
-      <div className="card bg-red-500">
+      <div
+        className="card-base"
+        style={{ backgroundColor: 'var(--color-blue-1000)' }}
+      >
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
         </button>

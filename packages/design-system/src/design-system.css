@@ -1,0 +1,23 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap');
+
+@import 'tailwindcss/preflight';
+@tailwind utilities;
+
+@source "../../apps/react-app/src/**/*.{js,jsx,ts,tsx}";
+@source "../../apps/landing/app/**/*.{js,jsx,ts,tsx}";
+@source "../../packages/ui/src/**/*.{js,jsx,ts,tsx}";
+
+/* Import theme definitions */
+@import './themes/default.css';
+
+/* Import component-specific styles */
+@import './components/ui-components.css';
+
+/* Import custom utilities */
+@import './utilities/custom-utilities.css';
+
+/* Base styles */
+body {
+  font-family: 'Geist', sans-serif;
+}

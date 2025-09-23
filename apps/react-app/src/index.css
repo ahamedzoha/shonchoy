@@ -1,3 +1,2 @@
-/* @import "tailwindcss"; */
-@import '@repo/tailwind-config';
-@import '@repo/ui/styles.css';
+/* Import pre-built design system CSS */
+@import '@repo/design-system';
