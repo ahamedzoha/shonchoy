@@ -1,8 +1,8 @@
-import Image from "next/image";
-import { Card } from "@repo/ui/card";
-import { Gradient } from "@repo/ui/gradient";
-import { TurborepoLogo } from "@repo/ui/turborepo-logo";
-import { Test } from "@repo/ui/test";
+import Image from "next/image"
+import { Card } from "@repo/ui/card"
+import { Gradient } from "@repo/ui/gradient"
+import { TurborepoLogo } from "@repo/ui/turborepo-logo"
+import { Test } from "@repo/ui/test"
 
 const LINKS = [
   {
@@ -26,7 +26,7 @@ const LINKS = [
     description:
       "Instantly deploy your Turborepo to a shareable URL with Vercel.",
   },
-];
+]
 
 export default function Page() {
   return (
@@ -113,5 +113,5 @@ export default function Page() {
         ))}
       </div>
     </main>
-  );
+  )
 }

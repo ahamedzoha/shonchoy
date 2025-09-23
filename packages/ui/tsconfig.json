@@ -3,8 +3,8 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "module": "ES2020",
+    "moduleResolution": "node",
     "incremental": true,
     "resolveJsonModule": true
   },
