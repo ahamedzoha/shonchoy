@@ -1,7 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap");
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap');
+@import 'tailwindcss';
 body {
-  font-family: "Geist", sans-serif;
+  font-family: 'Geist', sans-serif;
 }
 /* @theme {
   --color-blue-1000: #2a8af6;

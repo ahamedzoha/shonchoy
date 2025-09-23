@@ -2,7 +2,7 @@ module.exports = {
   // Basic Prettier options
   semi: true,
   trailingComma: 'es5',
-  singleQuote: true,
+  singleQuote: false,
   printWidth: 80,
   tabWidth: 2,
   useTabs: false,

@@ -4,6 +4,7 @@ import express from 'express';
 import helmet from 'helmet';
 
 const app = express();
+// eslint-disable-next-line turbo/no-undeclared-env-vars
 const PORT = process.env.PORT || 3002;
 
 // Middleware
@@ -57,12 +58,14 @@ app.use('*', (req, res) => {
 // Error handler
 app.use(
   (
-    err: any,
+    err: unknown & { stack?: string },
     req: express.Request,
     res: express.Response,
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     next: express.NextFunction
   ) => {
-    console.error(err.stack);
+    console.error(err?.stack ?? 'Unknown error');
     res.status(500).json({ error: 'Something went wrong!' });
   }
 );
