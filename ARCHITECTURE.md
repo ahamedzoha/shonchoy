@@ -20,7 +20,6 @@ graph TD
     B --> D[api<br/>Express.js Server]
     B --> E[react-app<br/>Vite + React SPA]
     B --> F[web<br/>Next.js App]
-    B --> G[landing<br/>Placeholder]
 
     C --> H[ui<br/>Shared UI Components]
     C --> I[eslint-config<br/>Shared Linting Rules]
