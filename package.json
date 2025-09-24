@@ -1,31 +1,30 @@
 {
-  "name": "with-tailwind",
+  "name": "shadcn-ui-monorepo",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "dev:web": "turbo run dev --filter=react-app",
-    "dev:landing": "turbo run dev --filter=landing",
-    "dev:api": "turbo run dev --filter=api",
-    "start": "turbo run start",
-    "start:api": "turbo run start --filter=api",
-    "lint": "turbo run lint",
-    "check-types": "turbo run check-types",
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "dev:web": "turbo dev --filter=react-app",
+    "dev:landing": "turbo dev --filter=landing",
+    "dev:api": "turbo dev --filter=api",
+    "start": "turbo start",
+    "start:api": "turbo start --filter=api",
+    "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
-    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
     "prettier": "^3.6.2",
+    "turbo": "^2.5.5",
+    "typescript": "5.7.3",
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
-    "turbo": "^2.5.6"
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2"
   },
+  "packageManager": "pnpm@10.4.1",
   "engines": {
-    "node": ">=18"
-  },
-  "packageManager": "npm@10.9.2",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+    "node": ">=20"
+  }
 }
