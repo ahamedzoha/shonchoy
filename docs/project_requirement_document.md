@@ -61,7 +61,7 @@ The app is adaptable for individual or joint use (e.g., couples or families) and
   - What-If Simulations: Interactive tool for scenario planning (e.g., "What if I reduce X expense by Y%? Impact on surplus, net worth, and goals over Z years").
 
 - **Assets and Liabilities:**
-  - Track various assets (e.g., cash, investments, property) and liabilities (e.g., loans).
+  - Track various assets (e.g., cash, investments, property) and liabilities (e.g., loans, credit cards).
   - Net Worth Calculator: Automatic aggregation, trends, and historical comparisons.
   - Modules for insurance or other protections, with reminder alerts for renewals.
 
@@ -69,6 +69,13 @@ The app is adaptable for individual or joint use (e.g., couples or families) and
   - Allocation tools: Suggest or track diversified mixes (e.g., low-risk savings, medium-term bonds, growth investments) with pie chart visualizations.
   - Features like auto-reinvest alerts, maturity laddering, and rebalance reminders.
   - Projections: Compound interest simulators for goals like retirement, adjusting for inflation, with sensitivity analysis (e.g., varying return rates).
+
+- **Loan/Credit Card Payment Calculator and Simulation Module:**
+  - Loan Calculator: Compute EMI (Equated Monthly Installment), total interest, amortization schedules for fixed/variable rate loans (e.g., home, auto, personal loans).
+  - Credit Card Simulator: Calculate minimum payments, interest accrual, payoff timelines for revolving credit; simulate balance transfers or extra payments.
+  - What-If Simulations: Interactive scenarios (e.g., "What if I pay extra $X/month? Reduce payoff time by Y months, save $Z in interest"); integrate with surplus/budget for personalized advice.
+  - Visualizations: Amortization charts, payoff curves; export schedules as PDF/CSV.
+  - Integration: Link to liabilities tracking; auto-update net worth based on simulations.
 
 - **Reporting and Visualizations:**
   - Dashboards: Charts for expenses, assets, and growth trends (e.g., line graphs for surplus over time).
@@ -94,11 +101,13 @@ The app is adaptable for individual or joint use (e.g., couples or families) and
 - As an investor, I want goal projections to plan for the future.
 - As a budgeter, I want alerts to stay within category limits.
 - As a habit-builder, I want simulations to see benefits of reducing specific expenses, so I can stay motivated.
+- As a borrower, I want to calculate loan EMIs and simulate early payoffs to optimize debt management.
+- As a credit card user, I want to simulate payment strategies to minimize interest and accelerate debt freedom.
 
 ### 2.4 Prioritization (MVP vs. Future)
 
-- MVP: Auth, Core Tracking (Income/Expenses/Budget), Dashboard, Basic Portfolio, Basic Simulations.
-- V1.1: Joint Features, Advanced Projections, Habit Insights, Gamification.
+- MVP: Auth, Core Tracking (Income/Expenses/Budget), Dashboard, Basic Portfolio, Basic Simulations, Basic Loan/Credit Calculator.
+- V1.1: Joint Features, Advanced Projections, Habit Insights, Gamification, Advanced Loan/Credit Simulations.
 - Future: Integrations (if available), AI suggestions, Mobile Apps.
 
 ## 3. Design and UX Guidelines
@@ -118,6 +127,7 @@ The app is adaptable for individual or joint use (e.g., couples or families) and
 | Budgeting & Surplus       | Yes        | What-If Tools      | Predictive Analytics   |
 | Assets/Liabilities        | Basic      | Trends             | Insurance Integrations |
 | Portfolio Management      | Basic      | Projections        | Auto-Rebalancing       |
+| Loan/Credit Module        | Basic Calc | Simulations        | AI Debt Advice         |
 | Reporting/Visualizations  | Dashboards | Exports            | Custom Reports         |
 | Additional Tools          | Alerts     | Gamification       | AI Recommendations     |
 
@@ -134,12 +144,15 @@ graph TD
     G --> H[Export Reports]
     D --> I[Invite Joint User]
     I --> J[Merged Views]
+    D --> K[Loan/Credit Calculator]
+    K --> L[Run Payoff Simulations]
+    L --> M[Integrate with Budget]
 ```
 
 ## 4. Risks and Dependencies
 
-- Risks: User drop-off from manual entry – Address with simple UI and gamification; data privacy breaches – Mitigate with audits; scalability issues – Plan for microservices migration.
-- Dependencies: Tech stack as specified; third-party libs (e.g., Chart.js must be <5MB bundle size).
+- Risks: User drop-off from manual entry – Address with simple UI and gamification; data privacy breaches – Mitigate with audits; scalability issues – Plan for microservices migration; inaccurate calculations – Validate formulas with unit tests.
+- Dependencies: Tech stack as specified; third-party libs (e.g., Chart.js must be <5MB bundle size); math libraries for calculations (e.g., client-side JS for simulations).
 - Timeline: MVP in 8-12 weeks (design 2w, dev 6w, test/QA 2w).
 
 ## 5. Success Criteria
@@ -171,15 +184,18 @@ graph LR
     D --> F[Tracking Service (Income/Expenses)]
     D --> G[Portfolio Service]
     D --> H[Reporting Service]
-    E --> I[PostgreSQL DB]
-    F --> I
-    G --> I
-    H --> I
+    D --> I[Debt Service (Loan/Credit)]
+    E --> J[PostgreSQL DB]
+    F --> J
+    G --> J
+    H --> J
+    I --> J
     subgraph Future Microservices
         E
         F
         G
         H
+        I
     end
 ```
 
@@ -188,22 +204,22 @@ graph LR
 - **Frontend:** React 19 (TypeScript) with Vite for main app (react-app), Next.js for landing page (web), shadcn/ui with Tailwind CSS v4, Chart.js, React Query.
 - **Backend:** Express.js (TypeScript) with gateway pattern, JWT (via jsonwebtoken/passport).
 - **Database:** PostgreSQL (with pg library or TypeORM for ORM).
-- **Other:** Testing (Jest/Cypress), CI/CD (GitHub Actions), pnpm, Turbo; monitoring (Sentry for errors).
+- **Other:** Testing (Jest/Cypress), CI/CD (GitHub Actions), pnpm, Turbo; monitoring (Sentry for errors); math libs (e.g., mathjs for client/server calculations).
 
 ## 3. Database Schema
 
 ### 3.1 Schema Overview Table
 
-| Table         | Key Fields                                                                                | Relationships   | Notes                                   |
-| ------------- | ----------------------------------------------------------------------------------------- | --------------- | --------------------------------------- |
-| Users         | id (PK), email (unique), profile (JSON)                                                   | 1:M with others | Stores preferences like inflation rate. |
-| Incomes       | id (PK), user_id (FK), amount (decimal), type (enum), frequency (enum), notes (text)      | M:1 User        | Supports projections via stored rates.  |
-| Expenses      | id (PK), user_id (FK), category (string), amount (decimal), date (date), recurring (bool) | M:1 User        | Indexes on date for queries.            |
-| Assets        | id (PK), user_id (FK), type (enum), value (decimal), notes (text)                         | M:1 User        | JSON for custom details.                |
-| Liabilities   | id (PK), user_id (FK), type (enum), amount (decimal), end_date (date)                     | M:1 User        | Triggers for payoff alerts.             |
-| Portfolios    | id (PK), user_id (FK), allocation (JSON), projections (JSON)                              | M:1 User        | Stores simulation results.              |
-| Budgets       | id (PK), user_id (FK), period (date), surplus (decimal)                                   | M:1 User        | Aggregates from incomes/expenses.       |
-| JointAccounts | id (PK), user_ids (array), merged (bool)                                                  | M:M Users       | Permissions stored in JSON.             |
+| Table         | Key Fields                                                                                                                           | Relationships   | Notes                                                         |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------- | ------------------------------------------------------------- |
+| Users         | id (PK), email (unique), profile (JSON)                                                                                              | 1:M with others | Stores preferences like inflation rate.                       |
+| Incomes       | id (PK), user_id (FK), amount (decimal), type (enum), frequency (enum), notes (text)                                                 | M:1 User        | Supports projections via stored rates.                        |
+| Expenses      | id (PK), user_id (FK), category (string), amount (decimal), date (date), recurring (bool)                                            | M:1 User        | Indexes on date for queries.                                  |
+| Assets        | id (PK), user_id (FK), type (enum), value (decimal), notes (text)                                                                    | M:1 User        | JSON for custom details.                                      |
+| Liabilities   | id (PK), user_id (FK), type (enum: loan, credit_card), amount (decimal), end_date (date), interest_rate (decimal), term_months (int) | M:1 User        | Extended for loan/credit details; triggers for payoff alerts. |
+| Portfolios    | id (PK), user_id (FK), allocation (JSON), projections (JSON)                                                                         | M:1 User        | Stores simulation results.                                    |
+| Budgets       | id (PK), user_id (FK), period (date), surplus (decimal)                                                                              | M:1 User        | Aggregates from incomes/expenses.                             |
+| JointAccounts | id (PK), user_ids (array), merged (bool)                                                                                             | M:M Users       | Permissions stored in JSON.                                   |
 
 - Relationships and indexes as needed (e.g., foreign keys, unique constraints).
 
@@ -213,27 +229,30 @@ graph LR
 - **Incomes/Expenses/Assets/Liabilities:** CRUD via /api/{resource} (e.g., POST /api/incomes, GET /api/expenses?userId=xx).
 - **Budgets:** GET /api/budgets/surplus (calc), POST /api/budgets/envelope.
 - **Portfolios:** POST /api/portfolios/simulate (projections), GET /api/portfolios/alerts.
+- **Debt (Loan/Credit):** POST /api/debt/calculate (EMI/interest for loans), POST /api/debt/simulate (what-if payoffs), GET /api/debt/schedule (amortization).
 - **Reports:** GET /api/reports/dashboard (JSON for charts), GET /api/reports/export?format=csv.
 - **Joint:** POST /api/joint/invite, GET /api/joint/merged.
 - All routes prefixed through gateway (/api/gateway) for future modularity.
 
 ## 5. Frontend Structure
 
-- Components: Layout (Nav/Sidebar), Dashboard (Charts/Simulations), Forms (Entry/Custom), Pages (Income, Portfolio).
+- Components: Layout (Nav/Sidebar), Dashboard (Charts/Simulations), Forms (Entry/Custom), Pages (Income, Portfolio, DebtCalculator).
 - State: Context/Reducer for global (e.g., user), React Query for API caching/mutations.
 - Routing: React Router for app; Next.js pages for landing (e.g., /pricing, /blog).
-- Visuals: Responsive charts; integrate Mermaid.js client-side for user-generated diagrams if needed.
+- Visuals: Responsive charts; integrate Mermaid.js client-side for user-generated diagrams if needed; sliders/inputs for simulation parameters.
 
 ## 6. Calculations and Logic
 
 - **Surplus:** Sum(incomes) - Sum(expenses) (server-side for accuracy, with caching).
 - **Projections:** Future Value = PV _ (1 + r)^n + PMT _ (((1 + r)^n - 1) / r); implement in a dedicated service.
 - **Simulations:** What-if logic: Clone current data, apply changes (e.g., expense -= Y%), recompute surplus/projections.
+- **Loan EMI:** EMI = P _ (r _ (1 + r)^n) / ((1 + r)^n - 1); where P=principal, r=monthly rate, n=term months.
+- **Credit Card Payoff:** Balance iteration: New balance = old + interest - payment; simulate until zero.
 - **Alerts:** Cron jobs (node-cron) for scheduled checks/emails.
 
 ## 7. Testing and Quality
 
-- Unit: Services/components (80% coverage with Jest).
+- Unit: Services/components (80% coverage with Jest); special focus on calc accuracy (e.g., EMI edge cases).
 - Integration: API (Supertest).
 - E2E: User flows (Cypress).
 - Security: Regular scans (e.g., npm audit).
@@ -246,7 +265,7 @@ graph LR
 
 ## 9. Future Expansions and Considerations
 
-- **Microservices Architecture:** Transition to microservices with NestJS, separating modules into individual backend services (e.g., auth, finance tracking, reporting) for better scalability and maintainability. Use API gateway for routing; consider Kafka for inter-service communication.
+- **Microservices Architecture:** Transition to microservices with NestJS, separating modules into individual backend services (e.g., auth, finance tracking, reporting, debt) for better scalability and maintainability. Use API gateway for routing; consider Kafka for inter-service communication.
 - **AI and Machine Learning:** Integrate AI-driven recommendations for budgeting, investment suggestions, and personalized financial insights (e.g., via OpenAI API for natural language queries).
 - **Bank Integrations:** Add support for automatic bank data imports and syncing (e.g., via Plaid-like services if available in target markets).
 - **Mobile App:** Develop native mobile applications for iOS and Android using React Native.
