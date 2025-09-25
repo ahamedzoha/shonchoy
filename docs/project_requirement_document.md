@@ -22,66 +22,70 @@ The app is adaptable for individual or joint use (e.g., couples or families) and
 
 - Help users achieve better savings rates by identifying spending leaks and providing actionable insights.
 - Offer tools for portfolio diversification and growth projections to support informed decision-making.
-- Foster positive financial habits through tracking and alerts.
-- Monetization: Free basic version; premium for advanced features like detailed projections or AI-driven recommendations (e.g., annual subscription).
-- Metrics for Success: High user retention (e.g., 80% after 3 months); frequent engagement (e.g., 4+ logins/week); measurable improvements in user-reported financial habits.
+- Foster positive financial habits through tracking, alerts, and simulations.
+- Monetization: Free basic version; premium for advanced features like detailed projections, AI-driven recommendations, or premium simulations (e.g., annual subscription at market-competitive pricing).
+- Metrics for Success: High user retention (e.g., 80% after 3 months); frequent engagement (e.g., 4+ logins/week); measurable improvements in user-reported financial habits (e.g., 15-20% average reduction in tracked discretionary spends); premium conversion rate of 10-15%.
 
 ### 1.5 Key Assumptions and Constraints
 
 - No automatic bank integrations (manual entry primary).
 - Currency: Multi-currency support, with defaults like BDT, USD, EUR.
-- Data Privacy: Compliant with relevant regulations (e.g., GDPR or local data laws).
+- Data Privacy: Compliant with relevant regulations (e.g., GDPR or local data laws); user data not sold or shared without explicit consent.
 - Offline Support: Basic caching for recent data via PWA.
 - Scope: MVP emphasizes core tracking; expansions for advanced tools.
+- Additional Constraints: Browser compatibility (latest Chrome, Firefox, Safari; no IE support); maximum data storage per user (e.g., 10MB for free tier to control costs); no real-time currency conversion in MVP (user-input rates only).
 
 ## 2. Features and Requirements
 
 ### 2.1 Core Features
 
 - **User Authentication and Profiles:**
-  - Secure signup/login (email/password, OAuth options).
-  - Support for multiple profiles: Invite family members for joint accounts with merged views.
-  - Profile setup: Basic details like income sources, goals, and preferences (e.g., inflation rate assumptions).
+  - Secure signup/login (email/password, OAuth options like Google, Apple).
+  - Support for multiple profiles: Invite family members for joint accounts with merged views and permission levels (e.g., view-only for shared reports).
+  - Profile setup: Basic details like income sources, goals, and preferences (e.g., inflation rate assumptions, custom categories).
 
 - **Income Tracking:**
   - Add/edit income streams (e.g., salary, freelance, investments).
   - Projections: Calculate potential growth based on user-input rates (e.g., annual hikes).
-  - Support for variable incomes (e.g., side gigs).
+  - Support for variable incomes (e.g., side gigs) with averaging tools.
 
 - **Expense Tracking:**
   - Manual entry with customizable categories (e.g., subscriptions, utilities, discretionary spends).
   - Envelope Budgeting: Assign and track budgets per category with visual overspend alerts.
-  - Habit Insights: Identify and simulate savings from reducing specific spends (e.g., recurring habits).
-  - Recurring expenses: Auto-reminders for bills or payments.
+  - Habit Insights: Identify recurring habits, simulate savings from reductions (e.g., "Reduce subscriptions by 20%: Save $X/month, add $Y to retirement in 5 years"), and provide motivational visualizations.
+  - Recurring expenses: Auto-reminders for bills or payments, with import from CSV for bulk entry.
 
 - **Budgeting and Surplus Calculation:**
   - Flexible systems like zero-based or envelope budgeting.
-  - Dashboard for monthly/annual surpluses and projections, factoring in life events (e.g., income changes).
+  - Dashboard for monthly/annual surpluses and projections, factoring in life events (e.g., income changes, one-time expenses).
+  - What-If Simulations: Interactive tool for scenario planning (e.g., "What if I reduce X expense by Y%? Impact on surplus, net worth, and goals over Z years").
+
 - **Assets and Liabilities:**
   - Track various assets (e.g., cash, investments, property) and liabilities (e.g., loans).
-  - Net Worth Calculator: Automatic aggregation and trends.
-  - Modules for insurance or other protections.
+  - Net Worth Calculator: Automatic aggregation, trends, and historical comparisons.
+  - Modules for insurance or other protections, with reminder alerts for renewals.
 
 - **Portfolio Management:**
-  - Allocation tools: Suggest or track diversified mixes (e.g., low-risk savings, medium-term bonds, growth investments).
+  - Allocation tools: Suggest or track diversified mixes (e.g., low-risk savings, medium-term bonds, growth investments) with pie chart visualizations.
   - Features like auto-reinvest alerts, maturity laddering, and rebalance reminders.
-  - Projections: Compound interest simulators for goals like retirement, adjusting for inflation.
+  - Projections: Compound interest simulators for goals like retirement, adjusting for inflation, with sensitivity analysis (e.g., varying return rates).
 
 - **Reporting and Visualizations:**
-  - Dashboards: Charts for expenses, assets, and growth trends.
-  - Goal Tracker: Monitor progress toward user-defined targets (e.g., vacations, major purchases).
-  - Export: Reports in PDF/CSV formats.
+  - Dashboards: Charts for expenses, assets, and growth trends (e.g., line graphs for surplus over time).
+  - Goal Tracker: Monitor progress toward user-defined targets (e.g., vacations, major purchases) with progress bars and milestone notifications.
+  - Export: Reports in PDF/CSV formats, including customizable templates.
 
 - **Additional Tools:**
-  - Risk Alerts: Notifications for gaps (e.g., low emergency funds).
-  - Gamification: Rewards for consistent use or milestone achievements.
+  - Risk Alerts: Notifications for gaps (e.g., low emergency funds, high debt ratios).
+  - Gamification: Rewards for consistent use or milestone achievements (e.g., badges for 30-day tracking streaks, unlocking premium previews).
 
 ### 2.2 Non-Functional Requirements
 
-- Performance: Quick loads (<2s); scalable for growing users.
-- Security: Encrypted data, secure auth.
-- Accessibility: Responsive design, multi-language support.
-- Scalability: Cloud-compatible.
+- Performance: Quick loads (<2s); scalable for growing users (target 10K active users in year 1).
+- Security: Encrypted data (HTTPS, AES for sensitive fields), secure auth (rate limiting, 2FA option).
+- Accessibility: Responsive design, multi-language support (English default; Bengali/others in V1.1), WCAG 2.1 Level AA compliance.
+- Scalability: Cloud-compatible (e.g., AWS or Vercel); handle peak loads during month-ends.
+- Reliability: 99.9% uptime; automated backups.
 
 ### 2.3 User Stories
 
@@ -89,89 +93,165 @@ The app is adaptable for individual or joint use (e.g., couples or families) and
 - As a family, I want joint access to combine financial views.
 - As an investor, I want goal projections to plan for the future.
 - As a budgeter, I want alerts to stay within category limits.
+- As a habit-builder, I want simulations to see benefits of reducing specific expenses, so I can stay motivated.
 
 ### 2.4 Prioritization (MVP vs. Future)
 
-- MVP: Auth, Core Tracking (Income/Expenses/Budget), Dashboard, Basic Portfolio.
-- V1.1: Joint Features, Advanced Projections, Insights.
-- Future: Integrations (if available), AI suggestions.
+- MVP: Auth, Core Tracking (Income/Expenses/Budget), Dashboard, Basic Portfolio, Basic Simulations.
+- V1.1: Joint Features, Advanced Projections, Habit Insights, Gamification.
+- Future: Integrations (if available), AI suggestions, Mobile Apps.
 
 ## 3. Design and UX Guidelines
 
-- UI: Modern, intuitive (e.g., shadcn/ui with Tailwind CSS v4); theme options.
-- Flow: Easy onboarding; customizable forms.
-- Mobile-First: Fully responsive.
+- UI: Modern, intuitive (e.g., shadcn/ui with Tailwind CSS v4); theme options (light/dark mode).
+- Flow: Easy onboarding wizard; customizable forms with auto-suggestions.
+- Mobile-First: Fully responsive; PWA for installable experience.
+
+### 3.1 Visual Aids
+
+#### Feature Prioritization Table
+
+| Feature Category          | MVP        | V1.1               | Future                 |
+| ------------------------- | ---------- | ------------------ | ---------------------- |
+| Authentication & Profiles | Yes        | Joint Enhancements | Multi-Tenancy          |
+| Income/Expense Tracking   | Yes        | Simulations        | AI Categorization      |
+| Budgeting & Surplus       | Yes        | What-If Tools      | Predictive Analytics   |
+| Assets/Liabilities        | Basic      | Trends             | Insurance Integrations |
+| Portfolio Management      | Basic      | Projections        | Auto-Rebalancing       |
+| Reporting/Visualizations  | Dashboards | Exports            | Custom Reports         |
+| Additional Tools          | Alerts     | Gamification       | AI Recommendations     |
+
+#### High-Level User Flow (Mermaid Diagram)
+
+```mermaid
+graph TD
+    A[Visitor Lands on Next.js Page] --> B[Sign Up/Login]
+    B --> C[Onboarding: Profile Setup]
+    C --> D[Dashboard: View Surplus/Charts]
+    D --> E[Track Income/Expenses]
+    E --> F[Run Simulations/Projections]
+    F --> G[Set Goals/Alerts]
+    G --> H[Export Reports]
+    D --> I[Invite Joint User]
+    I --> J[Merged Views]
+```
 
 ## 4. Risks and Dependencies
 
-- Risks: User drop-off from manual entry – Address with simple UI.
-- Dependencies: Tech stack as specified.
-- Timeline: MVP in 8-12 weeks.
+- Risks: User drop-off from manual entry – Address with simple UI and gamification; data privacy breaches – Mitigate with audits; scalability issues – Plan for microservices migration.
+- Dependencies: Tech stack as specified; third-party libs (e.g., Chart.js must be <5MB bundle size).
+- Timeline: MVP in 8-12 weeks (design 2w, dev 6w, test/QA 2w).
 
 ## 5. Success Criteria
 
-- User Feedback: High satisfaction scores.
-- Adoption: Steady user growth via organic means.
+- User Feedback: NPS >8/10; high satisfaction scores via in-app surveys.
+- Adoption: Steady user growth via organic means (target 1K users in 6 months); viral coefficient >1 from joint invites.
+- Business: Premium uptake (10% of users); positive ROI on development within 18 months.
 
 ---
 
-# Updated Technical Specification for Shonchoy Web App
+# Technical Specification for Shonchoy Web App
 
 ## 1. Architecture Overview
 
-- **High-Level Design:** Monorepo with client-server architecture using REST APIs. Main application in React 19 (Vite), landing page in Next.js, Backend in Express.js with gateway pattern, DB in PostgreSQL. Future: Microservices with NestJS.
-- **Deployment:** Monorepo setup with pnpm and Turbo; cloud hosting.
-- **Data Flow:** UI → Gateway API → Services → DB; optional real-time for joint updates.
-- **Scalability:** Built for expansion to microservices.
-- **Security:** Standard protections.
+- **High-Level Design:** Monorepo with client-server architecture using REST APIs. Main application in React 19 (Vite), landing page in Next.js, Backend in Express.js with API gateway pattern (all requests route through a central gateway for auth, logging, and routing to services). DB in PostgreSQL. Future: Migrate to microservices with NestJS for modular separation (e.g., auth service, tracking service).
+- **Deployment:** Monorepo setup with pnpm and Turbo for build orchestration; cloud hosting (e.g., Vercel for FE, Render/AWS for BE/DB).
+- **Data Flow:** UI → Gateway API (handles auth/rate limiting) → Internal Services → DB; optional real-time for joint updates via WebSockets (e.g., Socket.io).
+- **Scalability:** Built for expansion to microservices; use containerization (Docker) for future orchestration (Kubernetes if needed).
+- **Security:** Standard protections (JWT for auth, CORS, input validation).
+
+### 1.1 Architecture Diagram (Mermaid)
+
+```mermaid
+graph LR
+    A[Next.js Landing Page] --> B[User Signup/Login]
+    B --> C[React App (Main UI)]
+    C --> D[API Gateway (Express)]
+    D --> E[Auth Service]
+    D --> F[Tracking Service (Income/Expenses)]
+    D --> G[Portfolio Service]
+    D --> H[Reporting Service]
+    E --> I[PostgreSQL DB]
+    F --> I
+    G --> I
+    H --> I
+    subgraph Future Microservices
+        E
+        F
+        G
+        H
+    end
+```
 
 ## 2. Technology Stack
 
 - **Frontend:** React 19 (TypeScript) with Vite for main app (react-app), Next.js for landing page (web), shadcn/ui with Tailwind CSS v4, Chart.js, React Query.
-- **Backend:** Express.js (TypeScript) with gateway pattern, JWT.
-- **Database:** PostgreSQL.
-- **Other:** Testing (Jest/Cypress), CI/CD (GitHub Actions), pnpm, Turbo.
+- **Backend:** Express.js (TypeScript) with gateway pattern, JWT (via jsonwebtoken/passport).
+- **Database:** PostgreSQL (with pg library or TypeORM for ORM).
+- **Other:** Testing (Jest/Cypress), CI/CD (GitHub Actions), pnpm, Turbo; monitoring (Sentry for errors).
 
 ## 3. Database Schema
 
-- **Users:** id, email, profile (JSON for general details).
-- **Incomes:** id, user_id, amount, type, frequency, notes.
-- **Expenses:** id, user_id, category, amount, date, recurring.
-- **Assets:** id, user_id, type, value, notes.
-- **Liabilities:** id, user_id, type, amount, end_date.
-- **Portfolios:** id, user_id, allocation (JSON), projections (JSON).
-- **Budgets:** id, user_id, period, surplus.
-- **JointAccounts:** id, user_ids, merged.
-- Relationships and indexes as needed.
+### 3.1 Schema Overview Table
+
+| Table         | Key Fields                                                                                | Relationships   | Notes                                   |
+| ------------- | ----------------------------------------------------------------------------------------- | --------------- | --------------------------------------- |
+| Users         | id (PK), email (unique), profile (JSON)                                                   | 1:M with others | Stores preferences like inflation rate. |
+| Incomes       | id (PK), user_id (FK), amount (decimal), type (enum), frequency (enum), notes (text)      | M:1 User        | Supports projections via stored rates.  |
+| Expenses      | id (PK), user_id (FK), category (string), amount (decimal), date (date), recurring (bool) | M:1 User        | Indexes on date for queries.            |
+| Assets        | id (PK), user_id (FK), type (enum), value (decimal), notes (text)                         | M:1 User        | JSON for custom details.                |
+| Liabilities   | id (PK), user_id (FK), type (enum), amount (decimal), end_date (date)                     | M:1 User        | Triggers for payoff alerts.             |
+| Portfolios    | id (PK), user_id (FK), allocation (JSON), projections (JSON)                              | M:1 User        | Stores simulation results.              |
+| Budgets       | id (PK), user_id (FK), period (date), surplus (decimal)                                   | M:1 User        | Aggregates from incomes/expenses.       |
+| JointAccounts | id (PK), user_ids (array), merged (bool)                                                  | M:M Users       | Permissions stored in JSON.             |
+
+- Relationships and indexes as needed (e.g., foreign keys, unique constraints).
 
 ## 4. API Endpoints
 
-- **Auth:** Register/login/profile.
-- **Incomes/Expenses/Assets/Liabilities:** CRUD.
-- **Budgets:** Surplus calc, envelope assign.
-- **Portfolios:** Project simulations, alerts.
-- **Reports:** Dashboard data, exports.
-- **Joint:** Invite/merge.
+- **Auth:** POST /auth/register, POST /auth/login (returns JWT), GET /auth/profile (protected).
+- **Incomes/Expenses/Assets/Liabilities:** CRUD via /api/{resource} (e.g., POST /api/incomes, GET /api/expenses?userId=xx).
+- **Budgets:** GET /api/budgets/surplus (calc), POST /api/budgets/envelope.
+- **Portfolios:** POST /api/portfolios/simulate (projections), GET /api/portfolios/alerts.
+- **Reports:** GET /api/reports/dashboard (JSON for charts), GET /api/reports/export?format=csv.
+- **Joint:** POST /api/joint/invite, GET /api/joint/merged.
+- All routes prefixed through gateway (/api/gateway) for future modularity.
 
 ## 5. Frontend Structure
 
-- Components: Layout, Dashboard, Forms, Pages.
-- State: Context/Reducer + Query.
-- Routing: Protected.
-- Visuals: Responsive charts.
+- Components: Layout (Nav/Sidebar), Dashboard (Charts/Simulations), Forms (Entry/Custom), Pages (Income, Portfolio).
+- State: Context/Reducer for global (e.g., user), React Query for API caching/mutations.
+- Routing: React Router for app; Next.js pages for landing (e.g., /pricing, /blog).
+- Visuals: Responsive charts; integrate Mermaid.js client-side for user-generated diagrams if needed.
 
 ## 6. Calculations and Logic
 
-- **Surplus:** Sum incomes - expenses.
-- **Projections:** Standard financial formulas (e.g., future value).
-- **Alerts:** Scheduled notifications.
+- **Surplus:** Sum(incomes) - Sum(expenses) (server-side for accuracy, with caching).
+- **Projections:** Future Value = PV _ (1 + r)^n + PMT _ (((1 + r)^n - 1) / r); implement in a dedicated service.
+- **Simulations:** What-if logic: Clone current data, apply changes (e.g., expense -= Y%), recompute surplus/projections.
+- **Alerts:** Cron jobs (node-cron) for scheduled checks/emails.
 
 ## 7. Testing and Quality
 
-- Comprehensive coverage.
+- Unit: Services/components (80% coverage with Jest).
+- Integration: API (Supertest).
+- E2E: User flows (Cypress).
+- Security: Regular scans (e.g., npm audit).
 
 ## 8. Deployment and Maintenance
 
-- Env management, monitoring.
+- Env: .env files for secrets (e.g., DB_URL, JWT_SECRET).
+- Monitoring: Sentry, Prometheus; logs via Winston.
+- CI/CD: Build/test/deploy via GitHub Actions.
 
-This updated version generalizes the app by removing specific financial details and broadening the audience, making it suitable for a wider user base while retaining core functionality. If it's still too specific in areas, we can iterate further!
+## 9. Future Expansions and Considerations
+
+- **Microservices Architecture:** Transition to microservices with NestJS, separating modules into individual backend services (e.g., auth, finance tracking, reporting) for better scalability and maintainability. Use API gateway for routing; consider Kafka for inter-service communication.
+- **AI and Machine Learning:** Integrate AI-driven recommendations for budgeting, investment suggestions, and personalized financial insights (e.g., via OpenAI API for natural language queries).
+- **Bank Integrations:** Add support for automatic bank data imports and syncing (e.g., via Plaid-like services if available in target markets).
+- **Mobile App:** Develop native mobile applications for iOS and Android using React Native.
+- **Advanced Analytics:** Implement more sophisticated data analytics and predictive modeling (e.g., trend forecasting with ML).
+- **Multi-tenancy:** Support for enterprise features and team management (e.g., business accounts).
+- **Internationalization:** Expand to support more languages and regions, with locale-specific defaults.
+- **Performance Optimizations:** Implement caching (Redis), CDN for static assets, and advanced optimization techniques (e.g., code splitting).
+- **Enhancements to Gateway:** Extrapolate current gateway to include load balancing, service discovery (e.g., Consul), and API versioning for smooth microservices migration.
