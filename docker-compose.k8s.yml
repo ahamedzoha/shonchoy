@@ -1,0 +1,12 @@
+# Kubernetes-ready configuration
+# This can be used as a base for generating Kubernetes manifests
+
+services:
+  apisix:
+    environment:
+      - ETCD_HOST=${ETCD_HOST:-etcd-cluster:2379}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+    # No host ports in K8s - use LoadBalancer/Ingress
+    ports: []
+    networks:
+      - default # Use default network in K8s
