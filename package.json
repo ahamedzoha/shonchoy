@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev",
+    "dev": "turbo dev && turbo run apisix:up",
     "dev:web": "turbo dev --filter=react-app",
     "dev:landing": "turbo dev --filter=landing",
     "dev:api": "turbo dev --filter=api",
+    "apisix:up": "pnpm --filter apisix run apisix:up",
+    "apisix:down": "pnpm --filter apisix run apisix:down",
     "start": "turbo start",
     "start:api": "turbo start --filter=api",
     "lint": "turbo lint",

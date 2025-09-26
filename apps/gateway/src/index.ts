@@ -17,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.get("/", (req, res) => {
   res.json({
-    message: "Shonchoy APIGateway",
+    message: "Shonchoy API Gateway",
     version: "1.0.0",
     timestamp: new Date().toISOString(),
   });

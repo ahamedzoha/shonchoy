@@ -1,0 +1,9 @@
+{
+  "name": "apisix",
+  "private": true,
+  "scripts": {
+    "apisix:up": "docker-compose up -d etcd apisix",
+    "apisix:down": "docker-compose down",
+    "dev": "docker-compose up etcd apisix"
+  }
+}

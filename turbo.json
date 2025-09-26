@@ -16,6 +16,14 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "apisix:up": {
+      "cache": false,
+      "outputs": []
+    },
+    "apisix:down": {
+      "cache": false,
+      "outputs": []
     }
   }
 }

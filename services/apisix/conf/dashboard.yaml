@@ -1,0 +1,10 @@
+# Dashboard config (IP allow lists)
+conf:
+  listen:
+    host: 0.0.0.0
+    port: 9000
+  allow_list:
+    - 127.0.0.1 # Dev access
+  etcd:
+    endpoints:
+      - etcd:2379

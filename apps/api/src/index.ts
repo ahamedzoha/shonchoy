@@ -5,7 +5,7 @@ import helmet from "helmet";
 
 const app = express();
 // eslint-disable-next-line turbo/no-undeclared-env-vars
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 4001;
 
 // Middleware
 app.use(helmet());
