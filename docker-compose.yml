@@ -15,7 +15,18 @@ services:
       - "9092:9092/tcp"
     networks:
       apisix:
-
+  apisix-dashboard:
+    image: apache/apisix-dashboard:latest
+    restart: always
+    ports:
+      - "9000:9000/tcp"
+    networks:
+      apisix:
+    volumes:
+      - ./services/apisix/conf/dashboard.yaml:/usr/local/apisix-dashboard/conf/conf.yaml:ro
+    environment:
+      - ETCD_HOST=${ETCD_HOST:-etcd:2379}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
 networks:
   apisix:
     driver: bridge

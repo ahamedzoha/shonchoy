@@ -2,8 +2,8 @@
   "name": "apisix",
   "private": true,
   "scripts": {
-    "apisix:up": "docker-compose up -d etcd apisix",
+    "apisix:up": "docker-compose up -d etcd apisix apisix-dashboard",
     "apisix:down": "docker-compose down",
-    "dev": "docker-compose up etcd apisix"
+    "dev": "docker-compose up etcd apisix apisix-dashboard"
   }
 }
