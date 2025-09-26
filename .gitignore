@@ -2,7 +2,7 @@
 
 # APISIX
 /services/apisix/data/*
-/services/apisix/conf/data/
+/services/apisix/conf/etcd/data/
 
 # Dependencies
 node_modules
