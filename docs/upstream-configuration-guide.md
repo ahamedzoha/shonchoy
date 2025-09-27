@@ -12,6 +12,14 @@ Before starting, ensure the following are set up:
 - **API Server**: Running locally on port 4001 (`pnpm dev:api` or `cd apps/api && pnpm dev`).
 - **APISIX Dashboard**: Accessible at [http://127.0.0.1:9000](http://127.0.0.1:9000) with credentials `admin/admin`.
 
+### WSL2 Environment Setup
+
+If you're running on WSL2 (Windows Subsystem for Linux), the networking differs from native Linux/macOS:
+
+- `host.docker.internal` points to the Windows host, not the WSL2 VM
+- Use the WSL2 VM's IP address instead for container-to-host communication
+- Run `./scripts/setup-wsl2-apisix.sh` for automatic WSL2-compatible configuration
+
 ---
 
 ## Configuration Methods
@@ -27,7 +35,7 @@ The dashboard provides an intuitive interface for configuring APISIX.
 2. **Create an Upstream**:
    - Go to **Upstream** → **Create**.
    - **Settings**:
-     - **Name**: ` самимtest-backend` (or a descriptive name).
+     - **Name**: ` test-backend` (or a descriptive name).
      - **Load Balancing**: Select `roundrobin`.
      - **Nodes**: Add `host.docker.internal:4001` with weight `1`.
    - **Health Checks** (Enable Active):
@@ -89,6 +97,28 @@ curl http://127.0.0.1:9180/apisix/admin/routes/1 \
   }'
 ```
 
+### Method 3: WSL2 Auto-Configuration (Recommended for WSL2)
+
+For WSL2 environments, use the automated setup script that detects your WSL2 IP and configures APISIX automatically:
+
+```bash
+# Run the WSL2-specific setup script
+./scripts/setup-wsl2-apisix.sh
+```
+
+**What it does:**
+
+- Detects if you're running in WSL2
+- Automatically finds your WSL2 IP address
+- Configures upstream with correct IP (instead of `host.docker.internal`)
+- Sets up route configuration
+- Tests the configuration
+
+**Fallback for other environments:**
+
+- On macOS/Linux: Uses `host.docker.internal`
+- On WSL2: Uses detected WSL2 IP address
+
 ---
 
 ## Testing the Configuration
@@ -136,18 +166,24 @@ curl -s -X POST http://127.0.0.1:9080/api/users \
 ### Common Issues & Fixes
 
 1. **Connection Refused / 502 Bad Gateway**:
-   - **Cause**: Upstream set to `localhost` Lah instead of `host.docker.internal`.
-   - **Fix偶 Fix**: Use `host.docker.internal:4001` in upstream nodes.
+   - **Cause**: Upstream set to `localhost` instead of `host.docker.internal` (macOS/Linux) or WSL2 IP.
+   - **Fix**:
+     - macOS/Linux: Use `host.docker.internal:4001` in upstream nodes.
+     - WSL2: Use `./scripts/setup-wsl2-apisix.sh` or manually use WSL2 IP.
 
-2. **Health Check Shows Empty Nodes**:
+2. **Health Check Shows Empty Nodes (WSL2)**:
+   - **Cause**: Using `host.docker.internal` which points to Windows host, not WSL2 VM.
+   - **Fix**: Run `./scripts/setup-wsl2-apisix.sh` to use correct WSL2 IP.
+
+3. **Health Check Shows Empty Nodes (General)**:
    - **Cause**: Health checks not triggered yet.
    - **Fix**: Send a request to the route, then recheck health status.
 
-3. **API Returns 404**:
+4. **API Returns 404**:
    - **Cause**: Route URI mismatch.
    - **Fix**: Ensure route URI is `/*` to match all paths.
 
-4. **Health Check Fails**:
+5. **Health Check Fails**:
    - **Cause**: API not running or `/api/health` endpoint missing.
    - **Fix**: Verify API server is running on port 4001 and health endpoint exists.
 
