@@ -28,4 +28,3 @@ deployment:
       - "http://etcd:2379" # Will be overridden by environment variable in production
     prefix: "/apisix" # apisix configurations prefix
     timeout: 30 # 30 seconds
-

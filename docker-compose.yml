@@ -16,7 +16,7 @@ services:
     networks:
       apisix:
   apisix-dashboard:
-    image: apache/apisix-dashboard:3.0.1-alpine
+    image: apache/apisix-dashboard:3.0.0-centos
     restart: always
     ports:
       - "9000:9000/tcp"
