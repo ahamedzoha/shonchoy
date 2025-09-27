@@ -3,8 +3,12 @@ conf:
   listen:
     host: 0.0.0.0 # `manager api` listening ip or host name
     port: 9000
-  # allow_list:
-  #   - 127.0.0.1 # Dev access
+  allow_list:
+    - 0.0.0.0/0 # Dev access
+    - 127.0.0.1 # Dev access
+    - 10.0.0.0/8 # Dev access
+    - 172.16.0.0/12 # Dev access
+    - 192.168.0.0/16 # Dev access
   etcd:
     endpoints: # supports defining multiple etcd host addresses for an etcd cluster
       - etcd:2379
@@ -20,7 +24,7 @@ conf:
         # such as: logs/error.log, /tmp/logs/error.log, /dev/stdout, /dev/stderr
 authentication:
   secret:
-    secret # secret for jwt token generation.
+    edd1c9f034335f136f87ad84b625c8f1 # secret for jwt token generation.
     # NOTE: Highly recommended to modify this value to protect `manager api`.
     # if it's default value, when `manager api` start, it will generate a random string to replace it.
   expire_time: 3600 # jwt token expire time, in second
