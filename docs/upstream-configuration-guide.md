@@ -230,6 +230,67 @@ docker exec shonchoy-etcd-1 etcdctl endpoint health
 
 ---
 
+## Preserving Configurations Between Development Machines
+
+Since APISIX stores configurations in ETCD (a Docker volume), configs created on one machine (e.g., WSL2) won't automatically appear on another (e.g., mac). To preserve upstreams and routes across development environments, use the **Configuration as Code** approach with export/import scripts.
+
+### Export Configurations
+
+Export current APISIX configurations to JSON files that can be committed to Git:
+
+```bash
+# Export routes and upstreams to services/apisix/conf/exports/
+./scripts/export_apisix_config.sh
+```
+
+This creates:
+
+- `services/apisix/conf/exports/routes.json`
+- `services/apisix/conf/exports/upstreams.json`
+
+### Import Configurations
+
+On another machine, import the configurations after starting APISIX:
+
+```bash
+# Ensure APISIX is running, then import configs
+./scripts/import_apisix_config.sh
+```
+
+**What it does:**
+
+- Parses the exported JSON list format
+- Filters out system-generated fields (`id`, `create_time`, `update_time`)
+- Imports upstreams first, then routes (to resolve dependencies)
+- Creates each resource via individual PUT requests to the Admin API
+
+### Cross-Machine Workflow
+
+1. **On Machine A (e.g., WSL2)**:
+   - Configure upstreams/routes via Dashboard or Admin API
+   - Run `./scripts/export_apisix_config.sh`
+   - Commit and push the JSON files to Git
+
+2. **On Machine B (e.g., mac)**:
+   - Pull from Git
+   - Start APISIX (`pnpm dev`)
+   - Run `./scripts/import_apisix_config.sh`
+
+### Benefits
+
+- **Version Control**: Configurations are tracked in Git
+- **Portable**: Works across WSL2, macOS, Linux
+- **No Volume Issues**: Avoids Docker volume portability problems
+- **Dependency-Aware**: Handles upstream/route relationships correctly
+
+### Troubleshooting Import Issues
+
+- **"additional properties forbidden"**: Scripts filter out invalid fields
+- **"failed to fetch upstream info"**: Ensure upstreams are imported before routes
+- **WSL2 IP Changes**: Update node IPs in exported configs if WSL2 IP changes
+
+---
+
 ## Next Steps
 
 - Add multiple upstream nodes for better load balancing.
