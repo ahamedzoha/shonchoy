@@ -6,15 +6,27 @@ import {
 import { type Request, type Response } from "express";
 
 import { UserService } from "../services/index.js";
+import { logger } from "../utils/logger.js";
 
 export class UserController {
   static async getProfile(
     req: Request,
     res: Response<ApiResponse<UserDto>>
   ): Promise<void> {
+    const startTime = Date.now();
+    const userId = req.user?.id;
+
     try {
-      const userId = req.user?.id;
+      logger.info("Get user profile request", {
+        userId: userId,
+        email: req.user?.email,
+        ip: req.ip,
+      });
       if (!userId) {
+        logger.warn("Get profile failed - no user in request", {
+          ip: req.ip,
+          duration: `${Date.now() - startTime}ms`,
+        });
         res.status(401).json({
           success: false,
           error: "Unauthorized",
@@ -24,7 +36,15 @@ export class UserController {
       }
 
       const user = await UserService.getUserById(userId);
+
       if (!user) {
+        logger.error("Get user profile error", {
+          error: "User not found",
+          email: req.user?.email,
+          userId: userId,
+          ip: req.ip,
+          duration: `${Date.now() - startTime}ms`,
+        });
         res.status(404).json({
           success: false,
           error: "User not found",
@@ -32,6 +52,12 @@ export class UserController {
         });
         return;
       }
+      logger.info("Get user profile successful", {
+        userId: user.id,
+        email: user.email,
+        ip: req.ip,
+        duration: `${Date.now() - startTime}ms`,
+      });
 
       const userDto: UserDto = {
         id: user.id,
@@ -42,6 +68,12 @@ export class UserController {
         createdAt: user.created_at.toISOString(),
         updatedAt: user.updated_at.toISOString(),
       };
+      logger.info("Get user profile successful", {
+        userId: user.id,
+        email: user.email,
+        ip: req.ip,
+        duration: `${Date.now() - startTime}ms`,
+      });
 
       res.json({
         success: true,
@@ -49,7 +81,14 @@ export class UserController {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      console.error("Get profile error:", error);
+      logger.error("Get profile error", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : undefined,
+        userId: userId,
+        email: req.user?.email,
+        ip: req.ip,
+        duration: `${Date.now() - startTime}ms`,
+      });
       res.status(500).json({
         success: false,
         error: "Internal server error",
@@ -62,9 +101,16 @@ export class UserController {
     req: Request,
     res: Response<PaginatedResponse<UserDto>>
   ): Promise<void> {
+    const startTime = Date.now();
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
+
+      logger.info("Get users request attempt started", {
+        page: page,
+        limit: limit,
+        ip: req.ip,
+      });
 
       const result = await UserService.getUsers(page, limit);
 
@@ -77,6 +123,17 @@ export class UserController {
         createdAt: user.created_at.toISOString(),
         updatedAt: user.updated_at.toISOString(),
       }));
+
+      logger.info("Get users request successful", {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: result.totalPages,
+        hasNext: result.hasNext,
+        hasPrev: result.hasPrev,
+        ip: req.ip,
+        duration: `${Date.now() - startTime}ms`,
+      });
 
       res.json({
         success: true,
@@ -92,7 +149,14 @@ export class UserController {
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      console.error("Get users error:", error);
+      logger.error("Get users error", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : undefined,
+        page: parseInt(req.query.page as string) || 1,
+        limit: parseInt(req.query.limit as string) || 10,
+        ip: req.ip,
+        duration: `${Date.now() - startTime}ms`,
+      });
       res.status(500).json({
         success: false,
         error: "Internal server error",
@@ -114,9 +178,14 @@ export class UserController {
     req: Request,
     res: Response<ApiResponse<UserDto>>
   ): Promise<void> {
+    const startTime = Date.now();
     try {
       const userId = req.user?.id;
       if (!userId) {
+        logger.warn("Update profile failed - no user in request", {
+          ip: req.ip,
+          duration: `${Date.now() - startTime}ms`,
+        });
         res.status(401).json({
           success: false,
           error: "Unauthorized",
@@ -129,6 +198,12 @@ export class UserController {
       const updatedUser = await UserService.updateUser(userId, updates);
 
       if (!updatedUser) {
+        logger.error("Update profile error", {
+          error: "User not found",
+          userId: userId,
+          ip: req.ip,
+          duration: `${Date.now() - startTime}ms`,
+        });
         res.status(404).json({
           success: false,
           error: "User not found",
@@ -147,13 +222,28 @@ export class UserController {
         updatedAt: updatedUser.updated_at.toISOString(),
       };
 
+      logger.info("Update profile successful", {
+        userId: updatedUser.id,
+        email: updatedUser.email,
+        ip: req.ip,
+        duration: `${Date.now() - startTime}ms`,
+      });
+
       res.json({
         success: true,
         data: userDto,
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
-      console.error("Update profile error:", error);
+      logger.error("Update profile error", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : undefined,
+        userId: req.user?.id,
+        email: req.user?.email,
+        updates: req.body,
+        ip: req.ip,
+        duration: `${Date.now() - startTime}ms`,
+      });
       res.status(500).json({
         success: false,
         error: "Internal server error",

@@ -21,7 +21,8 @@
     "express-validator": "^7.0.1",
     "helmet": "^7.1.0",
     "jose": "^5.2.0",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "winston": "^3.18.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

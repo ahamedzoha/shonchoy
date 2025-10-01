@@ -1,0 +1,27 @@
+{"ip":"::1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-01T17:42:43.637Z","url":"/health"}
+{"duration":"18ms","ip":"::1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-01T17:42:43.655Z","url":"/health"}
+{"ip":"::1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-01T17:48:27.641Z","url":"/healthx"}
+{"duration":"17ms","ip":"::1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":404,"timestamp":"2025-10-01T17:48:27.658Z","url":"/"}
+{"ip":"::1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-01T17:49:40.262Z","url":"/healthx"}
+{"duration":"12ms","ip":"::1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":404,"timestamp":"2025-10-01T17:49:40.274Z","url":"/healthx"}
+{"ip":"::1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-01T17:50:17.876Z","url":"/healthx"}
+{"duration":"13ms","ip":"::1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":404,"timestamp":"2025-10-01T17:50:17.888Z","url":"/"}
+{"ip":"::1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-01T17:50:20.635Z","url":"/health"}
+{"duration":"2ms","ip":"::1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-01T17:50:20.637Z","url":"/health"}
+{"ip":"::1","level":"http","message":"Incoming Request","method":"POST","service":"auth-service","timestamp":"2025-10-01T18:26:38.582Z","url":"/auth/register"}
+{"duration":"450ms","email":"user@example.com","ip":"::1","level":"info","message":"Register successful","service":"auth-service","timestamp":"2025-10-01T18:26:39.051Z","userId":"a31593e5-19b6-461a-9d30-ae7035991f0f"}
+{"duration":"473ms","ip":"::1","level":"info","message":"Request Completed","method":"POST","service":"auth-service","status":201,"timestamp":"2025-10-01T18:26:39.054Z","url":"/register"}
+{"ip":"::1","level":"http","message":"Incoming Request","method":"POST","service":"auth-service","timestamp":"2025-10-01T18:26:50.989Z","url":"/auth/register"}
+{"duration":"3ms","email":"user@example.com","firstName":"John","ip":"::1","lastName":"Doe","level":"warn","message":"Register attempt failed - user already exists","service":"auth-service","timestamp":"2025-10-01T18:26:50.997Z"}
+{"duration":"10ms","ip":"::1","level":"info","message":"Request Completed","method":"POST","service":"auth-service","status":409,"timestamp":"2025-10-01T18:26:50.998Z","url":"/register"}
+{"ip":"::1","level":"http","message":"Incoming Request","method":"POST","service":"auth-service","timestamp":"2025-10-01T18:27:18.803Z","url":"/auth/login"}
+{"email":"user@example.com","ip":"::1","level":"info","message":"Login attempt started","service":"auth-service","timestamp":"2025-10-01T18:27:18.807Z"}
+{"duration":"291ms","email":"user@example.com","ip":"::1","level":"info","message":"Login successful","service":"auth-service","timestamp":"2025-10-01T18:27:19.098Z","userId":"a31593e5-19b6-461a-9d30-ae7035991f0f"}
+{"duration":"296ms","ip":"::1","level":"info","message":"Request Completed","method":"POST","service":"auth-service","status":200,"timestamp":"2025-10-01T18:27:19.099Z","url":"/login"}
+{"ip":"::1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-01T18:28:09.247Z","url":"/users/profile"}
+{"duration":"69ms","ip":"::1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-01T18:28:09.310Z","url":"/profile"}
+{"ip":"::1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-01T18:38:13.643Z","url":"/users/profile"}
+{"email":"user@example.com","ip":"::1","level":"info","message":"Get user profile request","service":"auth-service","timestamp":"2025-10-01T18:38:13.651Z","userId":"a31593e5-19b6-461a-9d30-ae7035991f0f"}
+{"duration":"35ms","email":"user@example.com","ip":"::1","level":"info","message":"Get user profile successful","service":"auth-service","timestamp":"2025-10-01T18:38:13.686Z","userId":"a31593e5-19b6-461a-9d30-ae7035991f0f"}
+{"duration":"36ms","email":"user@example.com","ip":"::1","level":"info","message":"Get user profile successful","service":"auth-service","timestamp":"2025-10-01T18:38:13.687Z","userId":"a31593e5-19b6-461a-9d30-ae7035991f0f"}
+{"duration":"45ms","ip":"::1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-01T18:38:13.688Z","url":"/profile"}

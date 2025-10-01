@@ -1,14 +1,26 @@
 import type { ApiResponse } from "@workspace/common-dtos";
 import compression from "compression";
 import cors from "cors";
-import express from "express";
+import express, {
+  type NextFunction,
+  type Request,
+  type Response,
+} from "express";
 import helmet from "helmet";
 
+import {
+  errorLoggingMiddleware,
+  requestLoggingMiddleware,
+} from "./middleware/logger.middleware.js";
 import { authRoutes, userRoutes } from "./routes/index.js";
+import { logger } from "./utils/logger.js";
 
-const app = express();
+const app: express.Application = express();
 
-// Middleware
+// Logger Middleware
+app.use(requestLoggingMiddleware);
+
+// Security Middleware
 app.use(helmet());
 app.use(cors());
 app.use(compression());
@@ -37,22 +49,23 @@ app.use("*", (req, res) => {
   } as ApiResponse);
 });
 
-// Error handler
-app.use(
-  (
-    err: unknown & { stack?: string },
-    req: express.Request,
-    res: express.Response,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    next: express.NextFunction
-  ) => {
-    console.error(err?.stack ?? "Unknown error");
-    res.status(500).json({
-      success: false,
-      error: "Something went wrong!",
-      timestamp: new Date().toISOString(),
-    } as ApiResponse);
-  }
-);
+// Error Logging Middleware - should be last to catch all errors
+app.use(errorLoggingMiddleware);
+
+// Error handler - uses Winston Logger
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
+  logger.error("Unhandled [be-auth] application error occured", {
+    error: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    ip: req.ip,
+  });
+  res.status(500).json({
+    success: false,
+    error: "Something went wrong!",
+    timestamp: new Date().toISOString(),
+  } as ApiResponse);
+});
 
 export { app };
