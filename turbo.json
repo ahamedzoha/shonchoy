@@ -24,6 +24,14 @@
     "apisix:down": {
       "cache": false,
       "outputs": []
+    },
+    "pg:up": {
+      "cache": false,
+      "outputs": []
+    },
+    "pg:down": {
+      "cache": false,
+      "outputs": []
     }
   }
 }

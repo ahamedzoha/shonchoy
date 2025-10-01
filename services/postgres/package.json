@@ -1,0 +1,8 @@
+{
+  "name": "postgres",
+  "private": true,
+  "scripts": {
+    "pg:up": "docker-compose up -d postgres",
+    "pg:down": "docker-compose down postgres"
+  }
+}

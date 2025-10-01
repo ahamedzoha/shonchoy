@@ -1,0 +1,28 @@
+{
+  "upstreams": [
+    {
+      "id": "be-auth-upstream",
+      "name": "be-auth-upstream",
+      "type": "roundrobin",
+      "nodes": {
+        "host.docker.internal:4001": 1
+      },
+      "checks": {
+        "active": {
+          "type": "http",
+          "host": "host.docker.internal",
+          "port": 4001,
+          "http_path": "/health",
+          "healthy": {
+            "interval": 2,
+            "successes": 2
+          },
+          "unhealthy": {
+            "interval": 2,
+            "http_failures": 3
+          }
+        }
+      }
+    }
+  ]
+}

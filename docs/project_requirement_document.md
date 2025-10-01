@@ -167,44 +167,42 @@ graph TD
 
 ## 1. Architecture Overview
 
-- **High-Level Design:** Monorepo with client-server architecture using REST APIs. Main application in React 19 (Vite), landing page in Next.js, Backend in Express.js with API gateway pattern (all requests route through a central gateway for auth, logging, and routing to services). DB in PostgreSQL. Future: Migrate to microservices with NestJS for modular separation (e.g., auth service, tracking service).
-- **Deployment:** Monorepo setup with pnpm and Turbo for build orchestration; cloud hosting (e.g., Vercel for FE, Render/AWS for BE/DB).
-- **Data Flow:** UI → Gateway API (handles auth/rate limiting) → Internal Services → DB; optional real-time for joint updates via WebSockets (e.g., Socket.io).
-- **Scalability:** Built for expansion to microservices; use containerization (Docker) for future orchestration (Kubernetes if needed).
-- **Security:** Standard protections (JWT for auth, CORS, input validation).
+- **High-Level Design:** ✅ **Implemented** - Monorepo with client-server architecture using REST APIs. be-auth microservice in Express.js with TypeScript, Apache APISIX API gateway for routing, PostgreSQL database. Shared TypeScript packages for type safety across services.
+- **Deployment:** ✅ **Implemented** - Docker Compose for local development with PostgreSQL, APISIX, and ETCD. Monorepo with pnpm workspaces and Turbo build orchestration.
+- **Data Flow:** ✅ **Implemented** - UI → APISIX Gateway (load balancing, health checks) → be-auth Service (JWT auth, business logic) → PostgreSQL DB.
+- **Scalability:** ✅ **Ready** - Containerized architecture ready for Kubernetes orchestration. Modular service design enables easy addition of new microservices.
+- **Security:** ✅ **Implemented** - JWT authentication with refresh tokens, bcryptjs password hashing, input validation, CORS protection, and Helmet security headers.
 
 ### 1.1 Architecture Diagram (Mermaid)
 
 ```mermaid
 graph LR
     A[Next.js Landing Page] --> B[User Signup/Login]
-    B --> C[React App (Main UI)]
-    C --> D[API Gateway (Express)]
-    D --> E[Auth Service]
-    D --> F[Tracking Service (Income/Expenses)]
-    D --> G[Portfolio Service]
-    D --> H[Reporting Service]
-    D --> I[Debt Service (Loan/Credit)]
-    E --> J[PostgreSQL DB]
-    F --> J
-    G --> J
-    H --> J
-    I --> J
-    subgraph Future Microservices
+    B --> C[React App Main UI]
+    C --> D[Apache APISIX Gateway]
+    D --> E[be-auth Service ✅]
+    D --> F[Future Services]
+    E --> G[PostgreSQL DB ✅]
+    F --> G
+
+    subgraph "✅ Working Now"
+        D
         E
-        F
         G
-        H
-        I
+    end
+
+    subgraph "🚧 Future Microservices"
+        F
     end
 ```
 
 ## 2. Technology Stack
 
 - **Frontend:** React 19 (TypeScript) with Vite for main app (react-app), Next.js for landing page (web), shadcn/ui with Tailwind CSS v4, Chart.js, React Query.
-- **Backend:** Express.js (TypeScript) with gateway pattern, JWT (via jsonwebtoken/passport).
-- **Database:** PostgreSQL (with pg library or TypeORM for ORM).
-- **Other:** Testing (Jest/Cypress), CI/CD (GitHub Actions), pnpm, Turbo; monitoring (Sentry for errors); math libs (e.g., mathjs for client/server calculations).
+- **Backend:** ✅ **Implemented** - Express.js (TypeScript) with modular architecture, Apache APISIX API gateway, JWT authentication with jose library, bcryptjs password hashing.
+- **Database:** ✅ **Implemented** - PostgreSQL 16 with connection pooling, custom SQL scripts for schema management.
+- **Services:** ✅ **Implemented** - Apache APISIX with ETCD configuration store, load balancing, and health checks.
+- **Other:** Testing (Jest/Supertest), CI/CD (GitHub Actions), pnpm workspaces, Turbo build orchestration; Docker Compose for development environment.
 
 ## 3. Database Schema
 
@@ -225,18 +223,27 @@ graph LR
 
 ## 4. API Endpoints
 
-- **Auth:** POST /auth/register, POST /auth/login (returns JWT), GET /auth/profile (protected).
-- **Incomes/Expenses/Assets/Liabilities:** CRUD via /api/{resource} (e.g., POST /api/incomes, GET /api/expenses?userId=xx).
-- **Budgets:** GET /api/budgets/surplus (calc), POST /api/budgets/envelope.
-- **Portfolios:** POST /api/portfolios/simulate (projections), GET /api/portfolios/alerts.
-- **Debt (Loan/Credit):** POST /api/debt/calculate (EMI/interest for loans), POST /api/debt/simulate (what-if payoffs), GET /api/debt/schedule (amortization).
-- **Reports:** GET /api/reports/dashboard (JSON for charts), GET /api/reports/export?format=csv.
-- **Joint:** POST /api/joint/invite, GET /api/joint/merged.
-- All routes prefixed through gateway (/api/gateway) for future modularity.
+### ✅ Implemented Endpoints (be-auth Service)
+
+All endpoints accessible through APISIX gateway at `http://localhost:9080`
+
+- **Auth:** POST `/auth/register`, POST `/auth/login` (returns JWT), POST `/auth/refresh`, POST `/auth/logout`.
+- **Users:** GET `/users/profile` (protected), PUT `/users/profile` (protected), GET `/users` (admin with pagination).
+- **Health:** GET `/health` (service health check).
+
+### 🚧 Planned Endpoints (Future Services)
+
+- **Incomes/Expenses/Assets/Liabilities:** CRUD via `/api/{resource}` (e.g., POST `/api/incomes`, GET `/api/expenses?userId=xx`).
+- **Budgets:** GET `/api/budgets/surplus` (calc), POST `/api/budgets/envelope`.
+- **Portfolios:** POST `/api/portfolios/simulate` (projections), GET `/api/portfolios/alerts`.
+- **Debt (Loan/Credit):** POST `/api/debt/calculate` (EMI/interest for loans), POST `/api/debt/simulate` (what-if payoffs), GET `/api/debt/schedule` (amortization).
+- **Reports:** GET `/api/reports/dashboard` (JSON for charts), GET `/api/reports/export?format=csv` (export reports).
+- **Joint:** POST `/api/joint/invite`, GET `/api/joint/merged`.
+- All future routes will be prefixed through APISIX gateway for modularity.
 
 ## 5. Frontend Structure
 
-- Components: Layout (Nav/Sidebar), Dashboard (Charts/Simulations), Forms (Entry/Custom), Pages (Income, Portfolio, DebtCalculator).
+- Components: Layout (Nav/Sidebar), Dashboard (Charts/Simulations), Forms (Entry/Custom), Pages (Income, Portfolio, DebtCalculator, etc.).
 - State: Context/Reducer for global (e.g., user), React Query for API caching/mutations.
 - Routing: React Router for app; Next.js pages for landing (e.g., /pricing, /blog).
 - Visuals: Responsive charts; integrate Mermaid.js client-side for user-generated diagrams if needed; sliders/inputs for simulation parameters.
@@ -244,9 +251,9 @@ graph LR
 ## 6. Calculations and Logic
 
 - **Surplus:** Sum(incomes) - Sum(expenses) (server-side for accuracy, with caching).
-- **Projections:** Future Value = PV _ (1 + r)^n + PMT _ (((1 + r)^n - 1) / r); implement in a dedicated service.
+- **Projections:** `Future Value = PV _ (1 + r)^n + PMT _ (((1 + r)^n - 1) / r)`; implement in a dedicated service (e.g., be-auth service).
 - **Simulations:** What-if logic: Clone current data, apply changes (e.g., expense -= Y%), recompute surplus/projections.
-- **Loan EMI:** EMI = P _ (r _ (1 + r)^n) / ((1 + r)^n - 1); where P=principal, r=monthly rate, n=term months.
+- **Loan EMI:** `EMI = P _ (r _ (1 + r)^n) / ((1 + r)^n - 1)`; where P=principal, r=monthly rate, n=term months.
 - **Credit Card Payoff:** Balance iteration: New balance = old + interest - payment; simulate until zero.
 - **Alerts:** Cron jobs (node-cron) for scheduled checks/emails.
 

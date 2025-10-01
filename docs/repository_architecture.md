@@ -19,27 +19,36 @@ graph TD
     A --> G[Services]
     A --> C[Packages]
 
-    B --> D[be-auth<br/>Express.js Server]
+    B --> D[be-auth<br/>✅ Express.js Auth Service]
     B --> E[react-app<br/>Vite + React SPA]
     B --> F[web<br/>Next.js App]
 
-    C --> H[ui<br/>Shared UI Components]
-    C --> I[eslint-config<br/>Shared Linting Rules]
-    C --> J[typescript-config<br/>Shared TypeScript Configs]
+    C --> H[auth-types<br/>✅ Shared Auth Types]
+    C --> I[common-dtos<br/>✅ Shared DTOs]
+    C --> J[database-entities<br/>✅ DB Schemas]
+    C --> K[ui<br/>Shared UI Components]
+    C --> L[eslint-config<br/>Shared Linting Rules]
+    C --> M[typescript-config<br/>Shared TypeScript Configs]
 
-    E --> H
-    F --> H
-    G --> R[Apache APISIX<br/>API Gateway]
-    D -.->|Optional| H
-    H --> K[Tailwind CSS v4]
-    H --> L[Radix UI Primitives]
-    H --> M[Lucide Icons]
+    D --> H
+    D --> I
+    D --> J
+    E --> K
+    F --> K
+    G --> R[Apache APISIX<br/>✅ API Gateway]
+    G --> S[PostgreSQL<br/>✅ Database Service]
 
-    F --> N[Next.js Framework]
-    E --> O[Vite Build Tool]
+    K --> N[Tailwind CSS v4]
+    K --> O[Radix UI Primitives]
+    K --> P[Lucide Icons]
 
-    A --> P[Turbo<br/>Build Orchestration]
-    A --> Q[pnpm<br/>Package Management]
+    F --> Q[Next.js Framework]
+    E --> T[Vite Build Tool]
+    D --> U[PostgreSQL Client]
+
+    A --> V[Turbo<br/>Build Orchestration]
+    A --> W[pnpm<br/>Package Management]
+    R --> X[ETCD<br/>Config Store]
 ```
 
 ## Apps Overview
@@ -66,23 +75,59 @@ graph TD
 
 ### Other Apps
 
-#### be-auth (Express.js Server)
+#### be-auth (Express.js Auth Service) ✅
 
-- **Framework**: Express.js with TypeScript
-- **Features**: RESTful API with health checks and sample user endpoints
-- **Security**: Helmet for security headers, CORS support
-- **Build**: Uses tsup for bundling
-- **Port**: Runs on port 3002 in development
+- **Framework**: Express.js with TypeScript and modular architecture
+- **Features**: Complete JWT authentication, user management, PostgreSQL integration
+- **Security**: bcryptjs password hashing, JWT tokens, input validation
+- **Database**: PostgreSQL with connection pooling and session management
+- **API**: RESTful endpoints with proper error handling and TypeScript interfaces
+- **Port**: Runs on port 4001 in development
+- **Status**: ✅ Fully functional with APISIX integration
 
 ### Services Overview
 
-#### Apache APISIX (API Gateway)
+#### Apache APISIX (API Gateway) ✅
 
-- **Framework**: Apache APISIX
-- **Features**: API gateway with authentication, rate limiting, and routing
-- **Purpose**: API gateway for routing requests to the appropriate backend services
+- **Framework**: Apache APISIX with ETCD configuration store
+- **Features**: Load balancing, health checks, rate limiting, and request routing
+- **Configuration**: Automatic WSL2 detection and IP configuration
+- **Integration**: Routes requests to be-auth service with JWT token validation
+- **Dashboard**: Web UI for configuration management at port 9000
+- **Status**: ✅ Fully configured and tested with be-auth service
+
+#### PostgreSQL (Database Service) ✅
+
+- **Version**: PostgreSQL 16 with Alpine Linux
+- **Features**: User authentication, session management, and data persistence
+- **Integration**: Connected to be-auth service with connection pooling
+- **Migration**: Automatic table creation via SQL scripts
+- **Status**: ✅ Running in Docker with persistent volumes
 
 ## Shared Packages
+
+### Authentication Packages ✅
+
+#### @workspace/auth-types - Shared Authentication Types
+
+- **Purpose**: Type-safe interfaces for authentication across services
+- **Contents**: User interfaces, auth DTOs, token interfaces, session entities
+- **Usage**: Imported by be-auth service for consistent typing
+- **Status**: ✅ Active and used in production
+
+#### @workspace/common-dtos - Shared Data Transfer Objects
+
+- **Purpose**: Common response types and validation schemas
+- **Contents**: Response DTOs, pagination types, email/password validation
+- **Usage**: Standardizes API responses across all services
+- **Status**: ✅ Active and used in production
+
+#### @workspace/database-entities - Database Schemas
+
+- **Purpose**: Shared database table definitions and types
+- **Contents**: User and session entity schemas
+- **Usage**: Ensures consistency between database and application code
+- **Status**: ✅ Active and used in production
 
 ### UI Package (@workspace/ui) - Primary Focus
 
@@ -129,8 +174,12 @@ Key features:
 
 ### Development Scripts
 
-- `pnpm dev`: Runs all apps in development mode and starts Apache APISIX API gateway in development mode using docker compose.
-- `pnpm dev:web`, `pnpm dev:api`: Run specific apps
+- `pnpm dev`: Runs all apps in development mode
+- `pnpm dev:auth`: Runs the be-auth service on port 4001
+- `pnpm dev:web`: Runs the Next.js web app on port 3000
+- `pnpm dev:react`: Runs the React SPA on port 3001
+- `docker-compose up -d`: Starts PostgreSQL, APISIX, and ETCD services
+- `./scripts/setup-wsl2-apisix.sh`: Configures APISIX for WSL2 environment
 - `pnpm build`: Builds all packages and apps
 - `pnpm lint`: Lints the entire codebase
 

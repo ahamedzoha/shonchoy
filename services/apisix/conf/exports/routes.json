@@ -1,1 +1,1 @@
-{"list":[{"value":{"name":"wsl2-service-route","id":"1","uri":"/*","update_time":1759040657,"create_time":1759006981,"status":1,"upstream_id":1,"priority":0},"key":"/apisix/routes/1","modifiedIndex":63,"createdIndex":35}],"total":1}
+{"list":[{"value":{"uri":"/*","priority":0,"update_time":1759312966,"create_time":1759312966,"upstream_id":1,"name":"wsl2-service-route","status":1,"id":"1"},"key":"/apisix/routes/1","createdIndex":316,"modifiedIndex":316}],"total":1}

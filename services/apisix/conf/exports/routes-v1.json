@@ -1,0 +1,82 @@
+{
+  "routes": [
+    {
+      "id": "v1-auth-login",
+      "uri": "/v1/auth/login",
+      "methods": ["POST"],
+      "upstream_id": "be-auth-upstream",
+      "plugins": {
+        "cors": {},
+        "rate-limit": {
+          "rate": 10,
+          "burst": 5,
+          "key_type": "var",
+          "key": "remote_addr"
+        }
+      }
+    },
+    {
+      "id": "v1-auth-register",
+      "uri": "/v1/auth/register",
+      "methods": ["POST"],
+      "upstream_id": "be-auth-upstream",
+      "plugins": {
+        "cors": {},
+        "rate-limit": {
+          "rate": 5,
+          "burst": 2,
+          "key_type": "var",
+          "key": "remote_addr"
+        }
+      }
+    },
+    {
+      "id": "v1-auth-refresh",
+      "uri": "/v1/auth/refresh",
+      "methods": ["POST"],
+      "upstream_id": "be-auth-upstream",
+      "plugins": {
+        "cors": {}
+      }
+    },
+    {
+      "id": "v1-auth-logout",
+      "uri": "/v1/auth/logout",
+      "methods": ["POST"],
+      "upstream_id": "be-auth-upstream",
+      "plugins": {
+        "cors": {},
+        "key-auth": {}
+      }
+    },
+    {
+      "id": "v1-users-profile",
+      "uri": "/v1/users/profile",
+      "methods": ["GET", "PUT"],
+      "upstream_id": "be-auth-upstream",
+      "plugins": {
+        "cors": {},
+        "key-auth": {}
+      }
+    },
+    {
+      "id": "v1-users-list",
+      "uri": "/v1/users",
+      "methods": ["GET"],
+      "upstream_id": "be-auth-upstream",
+      "plugins": {
+        "cors": {},
+        "key-auth": {}
+      }
+    },
+    {
+      "id": "v1-health",
+      "uri": "/v1/health",
+      "methods": ["GET"],
+      "upstream_id": "be-auth-upstream",
+      "plugins": {
+        "cors": {}
+      }
+    }
+  ]
+}

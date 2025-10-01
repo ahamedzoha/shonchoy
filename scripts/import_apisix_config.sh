@@ -35,9 +35,9 @@ import_resources() {
 }
 
 # Import upstreams FIRST (routes depend on them)
-import_resources "upstreams" "services/apisix/conf/exports/upstreams.json" "upstreams"
+import_resources "upstreams" "services/apisix/conf/exports/upstreams-v1.json" "upstreams"
 
 # Import routes SECOND (after upstreams are available)
-import_resources "routes" "services/apisix/conf/exports/routes.json" "routes"
+import_resources "routes" "services/apisix/conf/exports/routes-v1.json" "routes"
 
 echo "Import completed!"

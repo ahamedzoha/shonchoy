@@ -49,6 +49,28 @@ services:
     networks:
       apisix:
 
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: shonchoy_auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432/tcp"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-database.sql:/docker-entrypoint-initdb.d/init-database.sql:ro
+    networks:
+      apisix:
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d shonchoy_auth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   etcd_data:
+    driver: local
+  postgres_data:
     driver: local
