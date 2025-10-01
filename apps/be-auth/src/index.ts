@@ -17,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.get("/", (req, res) => {
   res.json({
-    message: "Shonchoy API Server",
+    message: "Shonchoy Authentication and Authorization Server",
     version: "1.0.0",
     timestamp: new Date().toISOString(),
   });

@@ -6,7 +6,8 @@ This repository is a monorepo template built with shadcn/ui, utilizing pnpm for 
 
 The monorepo includes:
 
-- **Apps**: Multiple applications (API server, React SPA, Next.js web app, and a placeholder landing page)
+- **Apps**: Multiple applications (Authentication and Authorization server, React SPA, Next.js web app, and a placeholder landing page)
+- **Services**: Apache APISIX as a service gateway. API gateway is used to route requests to the appropriate backend services (e.g. Auth service, Tracking service and etc.).
 - **Packages**: Shared configurations and UI components
 - **Tooling**: TypeScript, ESLint, Prettier, and Turbo for efficient development and builds
 
@@ -15,9 +16,10 @@ The monorepo includes:
 ```mermaid
 graph TD
     A[Root Workspace] --> B[Apps]
+    A --> G[Services]
     A --> C[Packages]
 
-    B --> D[api<br/>Express.js Server]
+    B --> D[be-auth<br/>Express.js Server]
     B --> E[react-app<br/>Vite + React SPA]
     B --> F[web<br/>Next.js App]
 
@@ -27,6 +29,7 @@ graph TD
 
     E --> H
     F --> H
+    G --> R[Apache APISIX<br/>API Gateway]
     D -.->|Optional| H
     H --> K[Tailwind CSS v4]
     H --> L[Radix UI Primitives]
@@ -63,7 +66,7 @@ graph TD
 
 ### Other Apps
 
-#### api (Express.js Server)
+#### be-auth (Express.js Server)
 
 - **Framework**: Express.js with TypeScript
 - **Features**: RESTful API with health checks and sample user endpoints
@@ -71,9 +74,13 @@ graph TD
 - **Build**: Uses tsup for bundling
 - **Port**: Runs on port 3002 in development
 
-#### landing (Placeholder)
+### Services Overview
 
-- Currently empty, intended for a marketing or landing page application
+#### Apache APISIX (API Gateway)
+
+- **Framework**: Apache APISIX
+- **Features**: API gateway with authentication, rate limiting, and routing
+- **Purpose**: API gateway for routing requests to the appropriate backend services
 
 ## Shared Packages
 
@@ -122,7 +129,7 @@ Key features:
 
 ### Development Scripts
 
-- `pnpm dev`: Runs all apps in development mode
+- `pnpm dev`: Runs all apps in development mode and starts Apache APISIX API gateway in development mode using docker compose.
 - `pnpm dev:web`, `pnpm dev:api`: Run specific apps
 - `pnpm build`: Builds all packages and apps
 - `pnpm lint`: Lints the entire codebase
@@ -308,12 +315,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - name: Build API
-        run: pnpm build --filter=api
+        run: pnpm build --filter=be-auth
       - name: Deploy to Railway
         uses: railwayapp/railway-action@v1
         with:
           railway-token: ${{ secrets.RAILWAY_TOKEN }}
-          service: api
+          service: be-auth
 ```
 
 ### Additional Pipeline Suggestions
