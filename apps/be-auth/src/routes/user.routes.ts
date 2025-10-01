@@ -3,7 +3,7 @@ import { Router } from "express";
 import { UserController } from "../controllers/index.js";
 import { authenticateToken } from "../middleware/index.js";
 
-const router = Router();
+const router: Router = Router();
 
 // All user routes require authentication
 router.use(authenticateToken);

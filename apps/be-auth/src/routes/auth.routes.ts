@@ -8,7 +8,7 @@ import {
   validateRegister,
 } from "../middleware/index.js";
 
-const router = Router();
+const router: Router = Router();
 
 // Public routes
 router.post(
