@@ -1,12 +1,18 @@
-import type { AuthTokens, LoginDto, RegisterDto } from "@workspace/auth-types";
-import type { ApiResponse } from "@workspace/common-dtos";
+import {
+  type ApiResponse,
+  AuthService,
+  type AuthTokens,
+  type LoginInput as LoginDto,
+  type RegisterInput as RegisterDto,
+  createLogger,
+} from "@workspace/backend-core";
 import { type Request, type Response } from "express";
 
-import { AuthService } from "../services/index.js";
-import { logger } from "../utils/logger.js";
+const logger = createLogger("auth-service");
 
 export class AuthController {
-  static async login(
+  constructor(private authService: AuthService) {}
+  async login(
     req: Request,
     res: Response<ApiResponse<AuthTokens>>
   ): Promise<void> {
@@ -19,7 +25,7 @@ export class AuthController {
         ip: req.ip,
         userAgent: req.headers["User-Agent"],
       });
-      const user = await AuthService.findUserByEmail(email);
+      const user = await this.authService.findUserByEmail(email);
       if (!user) {
         logger.warn("Login attempt failed - user not found", {
           email,
@@ -34,7 +40,7 @@ export class AuthController {
         return;
       }
 
-      const isValidPassword = await AuthService.verifyPassword(
+      const isValidPassword = await this.authService.verifyPassword(
         password,
         user.password_hash
       );
@@ -53,12 +59,12 @@ export class AuthController {
       }
 
       const [accessToken, refreshToken] = await Promise.all([
-        AuthService.createAccessToken(user),
-        AuthService.createRefreshToken(user),
+        this.authService.createAccessToken(user),
+        this.authService.createRefreshToken(user),
       ]);
 
       // Create session
-      await AuthService.createUserSession(user.id, refreshToken);
+      await this.authService.createUserSession(user.id, refreshToken);
 
       const tokens: AuthTokens = {
         accessToken,
@@ -96,7 +102,7 @@ export class AuthController {
     }
   }
 
-  static async register(
+  async register(
     req: Request,
     res: Response<ApiResponse<AuthTokens>>
   ): Promise<void> {
@@ -105,7 +111,7 @@ export class AuthController {
       const { email, password, firstName, lastName }: RegisterDto = req.body;
 
       // Check if user already exists
-      const existingUser = await AuthService.findUserByEmail(email);
+      const existingUser = await this.authService.findUserByEmail(email);
       if (existingUser) {
         logger.warn("Register attempt failed - user already exists", {
           email,
@@ -123,24 +129,24 @@ export class AuthController {
       }
 
       // Hash password
-      const passwordHash = await AuthService.hashPassword(password);
+      const passwordHash = await this.authService.hashPassword(password);
 
       // Create user
-      const user = await AuthService.createUser({
+      const user = await this.authService.createUser({
         email,
-        password_hash: passwordHash,
-        first_name: firstName,
-        last_name: lastName,
+        password: passwordHash,
+        firstName,
+        lastName,
       });
 
       // Generate tokens
       const [accessToken, refreshToken] = await Promise.all([
-        AuthService.createAccessToken(user),
-        AuthService.createRefreshToken(user),
+        this.authService.createAccessToken(user),
+        this.authService.createRefreshToken(user),
       ]);
 
       // Create session
-      await AuthService.createUserSession(user.id, refreshToken);
+      await this.authService.createUserSession(user.id, refreshToken);
 
       const tokens: AuthTokens = {
         accessToken,
@@ -177,7 +183,7 @@ export class AuthController {
     }
   }
 
-  static async refreshToken(
+  async refreshToken(
     req: Request,
     res: Response<ApiResponse<AuthTokens>>
   ): Promise<void> {
@@ -202,7 +208,7 @@ export class AuthController {
       }
 
       // Verify refresh token and get session
-      const session = await AuthService.findValidSession(refreshToken);
+      const session = await this.authService.findValidSession(refreshToken);
       if (!session) {
         logger.warn(
           "Refresh token attempt failed - invalid or expired refresh token",
@@ -220,7 +226,7 @@ export class AuthController {
       }
 
       // Get user
-      const user = await AuthService.findUserById(session.userId);
+      const user = await this.authService.findUserById(session.userId);
       if (!user) {
         logger.warn("Refresh token attempt failed - user not found", {
           ip: req.ip,
@@ -236,13 +242,13 @@ export class AuthController {
 
       // Generate new tokens
       const [accessToken, newRefreshToken] = await Promise.all([
-        AuthService.createAccessToken(user),
-        AuthService.createRefreshToken(user),
+        this.authService.createAccessToken(user),
+        this.authService.createRefreshToken(user),
       ]);
 
       // Revoke old session and create new one
-      await AuthService.revokeUserSession(user.id, refreshToken);
-      await AuthService.createUserSession(user.id, newRefreshToken);
+      await this.authService.revokeUserSession(user.id, refreshToken);
+      await this.authService.createUserSession(user.id, newRefreshToken);
 
       const tokens: AuthTokens = {
         accessToken,
@@ -276,7 +282,7 @@ export class AuthController {
     }
   }
 
-  static async logout(req: Request, res: Response<ApiResponse>): Promise<void> {
+  async logout(req: Request, res: Response<ApiResponse>): Promise<void> {
     const startTime = Date.now();
     try {
       const { refreshToken } = req.body;
@@ -288,7 +294,7 @@ export class AuthController {
           ip: req.ip,
           duration: `${Date.now() - startTime}ms`,
         });
-        await AuthService.revokeUserSession(user.id, refreshToken);
+        await this.authService.revokeUserSession(user.id, refreshToken);
       }
 
       res.json({

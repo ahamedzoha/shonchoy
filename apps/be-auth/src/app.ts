@@ -1,4 +1,8 @@
-import type { ApiResponse } from "@workspace/common-dtos";
+import {
+  type ApiResponse,
+  BackendContainer,
+  createLogger,
+} from "@workspace/backend-core";
 import compression from "compression";
 import cors from "cors";
 import express, {
@@ -8,64 +12,92 @@ import express, {
 } from "express";
 import helmet from "helmet";
 
+import { AuthController } from "./controllers/auth.controller";
+import { UserController } from "./controllers/user.controller";
+import { createAuthMiddleware } from "./middleware/auth.middleware";
 import {
   errorLoggingMiddleware,
   requestLoggingMiddleware,
-} from "./middleware/logger.middleware.js";
-import { authRoutes, userRoutes } from "./routes/index.js";
-import { logger } from "./utils/logger.js";
+} from "./middleware/logger.middleware";
+import { createAuthRoutes, createUserRoutes } from "./routes/index";
 
-const app: express.Application = express();
+const logger = createLogger("auth-service");
 
-// Logger Middleware
-app.use(requestLoggingMiddleware);
+export const createApp = (container: BackendContainer) => {
+  const app: express.Application = express();
 
-// Security Middleware
-app.use(helmet());
-app.use(cors());
-app.use(compression());
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true }));
+  // Logger Middleware
+  app.use(requestLoggingMiddleware);
 
-// Health check
-app.get("/health", (req, res) => {
-  res.json({
-    status: "healthy",
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
+  // Security Middleware
+  app.use(helmet());
+  app.use(cors());
+  app.use(compression());
+  app.use(express.json({ limit: "10mb" }));
+  app.use(express.urlencoded({ extended: true }));
+
+  // Health check
+  app.get("/health", (req, res) => {
+    res.json({
+      status: "healthy",
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+    });
   });
-});
 
-// API routes
-app.use("/auth", authRoutes);
-app.use("/users", userRoutes);
+  // Create controllers with services from container
+  const authController = new AuthController(container.authService);
+  const userController = new UserController(container.userService);
 
-// 404 handler
-app.use("*", (req, res) => {
-  res.status(404).json({
-    success: false,
-    error: "Route not found",
-    timestamp: new Date().toISOString(),
-  } as ApiResponse);
-});
+  // Create routes with controllers and JWT config
+  const jwtConfig = {
+    accessToken: {
+      secret:
+        process.env.JWT_ACCESS_SECRET ||
+        "your-super-secure-access-token-secret-here-at-least-32-chars",
+      expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "15m",
+    },
+    refreshToken: {
+      secret:
+        process.env.JWT_REFRESH_SECRET ||
+        "your-super-secure-refresh-token-secret-here-at-least-32-chars",
+      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
+    },
+  };
+  const authRoutes = createAuthRoutes(authController, jwtConfig);
+  const userRoutes = createUserRoutes(userController, jwtConfig);
 
-// Error Logging Middleware - should be last to catch all errors
-app.use(errorLoggingMiddleware);
+  // API routes
+  app.use("/auth", authRoutes);
+  app.use("/users", userRoutes);
 
-// Error handler - uses Winston Logger
-app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
-  logger.error("Unhandled [be-auth] application error occured", {
-    error: err.message,
-    stack: err.stack,
-    url: req.url,
-    method: req.method,
-    ip: req.ip,
+  // 404 handler
+  app.use("*", (req, res) => {
+    res.status(404).json({
+      success: false,
+      error: "Route not found",
+      timestamp: new Date().toISOString(),
+    } as ApiResponse);
   });
-  res.status(500).json({
-    success: false,
-    error: "Something went wrong!",
-    timestamp: new Date().toISOString(),
-  } as ApiResponse);
-});
 
-export { app };
+  // Error Logging Middleware - should be last to catch all errors
+  app.use(errorLoggingMiddleware);
+
+  // Error handler - uses Winston Logger
+  app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
+    logger.error("Unhandled [be-auth] application error occured", {
+      error: err.message,
+      stack: err.stack,
+      url: req.url,
+      method: req.method,
+      ip: req.ip,
+    });
+    res.status(500).json({
+      success: false,
+      error: "Something went wrong!",
+      timestamp: new Date().toISOString(),
+    } as ApiResponse);
+  });
+
+  return app;
+};

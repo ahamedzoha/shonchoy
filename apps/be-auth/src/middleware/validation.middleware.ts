@@ -1,4 +1,4 @@
-import { type ApiResponse } from "@workspace/common-dtos";
+import { type ApiResponse } from "@workspace/backend-core";
 import { type NextFunction, type Request, type Response } from "express";
 import { body, validationResult } from "express-validator";
 

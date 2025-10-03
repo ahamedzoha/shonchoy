@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="Shonchoy Local DB" uuid="933d3c5e-4356-4d0f-ad28-7eb09bdceb8a">
+    <data-source source="LOCAL" name="shonchoy_auth@localhost" uuid="0aa43bc0-1285-4c51-9d2d-43ec49d5159c">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>

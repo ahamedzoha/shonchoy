@@ -1,6 +1,7 @@
+import { createLogger } from "@workspace/backend-core";
 import { type NextFunction, type Request, type Response } from "express";
 
-import { logger } from "../utils/logger.js";
+const logger = createLogger("auth-service");
 
 //Error logging middleware
 export const errorLoggingMiddleware = (

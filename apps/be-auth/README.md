@@ -2,6 +2,8 @@
 
 A robust, scalable authentication service built with Express.js, TypeScript, and PostgreSQL, designed for the Shonchoy personal finance platform. Features complete JWT authentication, user management, and seamless integration with Apache APISIX for API versioning.
 
+This service leverages the consolidated `@workspace/backend-core` package for shared business logic, database entities, and dependency injection patterns.
+
 ## Features
 
 - 🔐 **JWT-based Authentication** - Access and refresh tokens with secure database storage
@@ -9,51 +11,65 @@ A robust, scalable authentication service built with Express.js, TypeScript, and
 - 🛡️ **Security First** - bcryptjs password hashing, JWT validation, rate limiting via APISIX
 - 📊 **API Versioning** - Clean v1/v2 endpoint management via Apache APISIX gateway
 - 🔄 **Session Management** - Secure refresh token handling with database persistence
-- 📦 **Shared Architecture** - Reusable types and DTOs across the monorepo
+- 📦 **Shared Architecture** - Reusable `@workspace/backend-core` package across all backend services
 - 🐳 **Docker Ready** - Complete containerized development environment
 - 📝 **Type-Safe** - Full TypeScript coverage with shared interfaces
+- 🏗️ **Clean Architecture** - Dependency injection, repository pattern, and service layer separation
 
 ## Architecture
 
-### Folder Structure
+### Application Architecture
 
 ```
-src/
-├── config/           # Database & JWT configuration
-│   ├── database.ts   # PostgreSQL connection pool
-│   ├── jwt.ts        # JWT configuration
-│   └── index.ts      # Configuration exports
-├── controllers/      # Route handlers
-│   ├── auth.controller.ts    # Auth endpoints (login/register/refresh)
-│   ├── user.controller.ts    # User management endpoints
-│   └── index.ts      # Controller exports
-├── middleware/       # Custom middleware
-│   ├── auth.middleware.ts    # JWT authentication
-│   ├── validation.middleware.ts  # Input validation (future)
-│   └── index.ts      # Middleware exports
-├── routes/          # Route definitions
-│   ├── auth.routes.ts        # Auth routes (/auth/*)
-│   ├── user.routes.ts        # User routes (/users/*)
-│   └── index.ts      # Route exports
-├── services/        # Business logic layer
-│   ├── auth.service.ts       # Authentication logic
-│   ├── user.service.ts       # User management logic
-│   └── index.ts      # Service exports
-├── types/           # Local type extensions
-│   ├── auth.types.ts         # Auth-specific types
-│   └── index.ts      # Type exports
-├── utils/           # Utilities
-│   ├── logger.ts    # Logging utilities
-│   └── index.ts     # Utility exports
-├── app.ts           # Express application setup
-└── index.ts         # Application entry point
+apps/be-auth/
+├── src/
+│   ├── controllers/      # Express route handlers
+│   │   ├── auth.controller.ts    # Auth endpoints (login/register/refresh)
+│   │   └── user.controller.ts    # User management endpoints
+│   ├── middleware/       # Express middleware
+│   │   ├── auth.middleware.ts    # JWT authentication
+│   │   ├── logger.middleware.ts  # Request/response logging
+│   │   └── validation.middleware.ts  # Input validation
+│   ├── routes/           # Route definitions
+│   │   ├── auth.routes.ts        # Auth routes (/auth/*)
+│   │   ├── user.routes.ts        # User routes (/users/*)
+│   │   └── index.ts              # Route exports
+│   ├── app.ts            # Express application setup with DI
+│   └── index.ts          # Application entry point
+└── package.json         # Service-specific dependencies
+```
+
+### Shared Backend-Core Package
+
+```
+packages/backend-core/
+├── src/
+│   ├── database/         # TypeORM entities & configuration
+│   │   ├── entities/     # User, Session entities
+│   │   └── config.ts     # Database & JWT configuration
+│   ├── repositories/     # Data access layer
+│   │   ├── interfaces/   # Repository contracts
+│   │   └── implementations/ # TypeORM implementations
+│   ├── services/         # Business logic layer
+│   │   ├── AuthService.ts    # Authentication logic
+│   │   ├── UserService.ts    # User management logic
+│   │   └── BaseService.ts    # Common service utilities
+│   ├── types/            # Shared type definitions
+│   ├── utils/            # Logger factory
+│   ├── container.ts      # Dependency injection container
+│   └── index.ts          # Package exports
+└── package.json         # Shared dependencies (TypeORM, bcrypt, etc.)
 ```
 
 ### Shared Packages
 
-- **`@workspace/auth-types`** - Authentication interfaces, DTOs, and entities
-- **`@workspace/common-dtos`** - Generic response types and validation schemas
-- **`@workspace/database-entities`** - Database table schemas and types
+- **`@workspace/backend-core`** - Consolidated backend package containing:
+  - TypeORM entities and database configuration
+  - Repository pattern implementations
+  - Business logic services (AuthService, UserService)
+  - Dependency injection container
+  - API DTOs, response types, and validation schemas
+  - Logger utilities and cross-cutting concerns
 
 ## API Endpoints
 
@@ -290,27 +306,37 @@ pnpm test:e2e
 - Complete JWT authentication with access/refresh tokens
 - User registration and login with bcryptjs password hashing
 - Protected user profile and user listing endpoints
-- PostgreSQL database with proper schema and migrations
+- PostgreSQL database with TypeORM entities and migrations
 - Docker Compose setup with PostgreSQL, APISIX, and ETCD
+- **Consolidated `@workspace/backend-core` package** with:
+  - TypeORM entities and repositories
+  - Dependency injection container
+  - Service layer with clean architecture
+  - Shared business logic across services
 - TypeScript interfaces and shared packages
 - Health check endpoint
 - Token refresh functionality
 - Session management with database persistence
+- Clean separation of concerns (controllers, services, repositories)
+- Winston-based structured logging
 
 🚧 **In Development:**
 
 - Input validation middleware (express-validator)
 - Rate limiting via APISIX plugins
 - Comprehensive test suite
-- API documentation generation
+- API documentation generation (OpenAPI/Swagger)
+- Database migration scripts
 
 📋 **Future Enhancements:**
 
 - OAuth integration (Google, Apple)
 - Multi-factor authentication
 - Password reset functionality
-- Admin user management
-- Audit logging
+- Admin user management and RBAC
+- Audit logging and monitoring
+- API rate limiting and caching
+- Service mesh integration
 
 ## License
 

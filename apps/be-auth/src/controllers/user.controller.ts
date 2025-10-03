@@ -1,15 +1,17 @@
-import { type UserDto } from "@workspace/auth-types";
 import {
   type ApiResponse,
   type PaginatedResponse,
-} from "@workspace/common-dtos";
+  type UserDto,
+  UserService,
+  createLogger,
+} from "@workspace/backend-core";
 import { type Request, type Response } from "express";
 
-import { UserService } from "../services/index.js";
-import { logger } from "../utils/logger.js";
+const logger = createLogger("auth-service");
 
 export class UserController {
-  static async getProfile(
+  constructor(private userService: UserService) {}
+  async getProfile(
     req: Request,
     res: Response<ApiResponse<UserDto>>
   ): Promise<void> {
@@ -35,7 +37,7 @@ export class UserController {
         return;
       }
 
-      const user = await UserService.getUserById(userId);
+      const user = await this.userService.getUserById(userId);
 
       if (!user) {
         logger.error("Get user profile error", {
@@ -62,11 +64,11 @@ export class UserController {
       const userDto: UserDto = {
         id: user.id,
         email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        isActive: user.is_active,
-        createdAt: user.created_at.toISOString(),
-        updatedAt: user.updated_at.toISOString(),
+        firstName: user.firstName,
+        lastName: user.lastName,
+        isActive: user.isActive,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
       };
       logger.info("Get user profile successful", {
         userId: user.id,
@@ -97,7 +99,7 @@ export class UserController {
     }
   }
 
-  static async getUsers(
+  async getUsers(
     req: Request,
     res: Response<PaginatedResponse<UserDto>>
   ): Promise<void> {
@@ -112,16 +114,16 @@ export class UserController {
         ip: req.ip,
       });
 
-      const result = await UserService.getUsers(page, limit);
+      const result = await this.userService.getUsers(page, limit);
 
       const userDtos: UserDto[] = result.users.map((user) => ({
         id: user.id,
         email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        isActive: user.is_active,
-        createdAt: user.created_at.toISOString(),
-        updatedAt: user.updated_at.toISOString(),
+        firstName: user.firstName,
+        lastName: user.lastName,
+        isActive: user.isActive,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
       }));
 
       logger.info("Get users request successful", {
@@ -174,7 +176,7 @@ export class UserController {
     }
   }
 
-  static async updateProfile(
+  async updateProfile(
     req: Request,
     res: Response<ApiResponse<UserDto>>
   ): Promise<void> {
@@ -195,7 +197,7 @@ export class UserController {
       }
 
       const updates = req.body;
-      const updatedUser = await UserService.updateUser(userId, updates);
+      const updatedUser = await this.userService.updateUser(userId, updates);
 
       if (!updatedUser) {
         logger.error("Update profile error", {
@@ -215,11 +217,11 @@ export class UserController {
       const userDto: UserDto = {
         id: updatedUser.id,
         email: updatedUser.email,
-        firstName: updatedUser.first_name,
-        lastName: updatedUser.last_name,
-        isActive: updatedUser.is_active,
-        createdAt: updatedUser.created_at.toISOString(),
-        updatedAt: updatedUser.updated_at.toISOString(),
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        isActive: updatedUser.isActive,
+        createdAt: updatedUser.createdAt.toISOString(),
+        updatedAt: updatedUser.updatedAt.toISOString(),
       };
 
       logger.info("Update profile successful", {

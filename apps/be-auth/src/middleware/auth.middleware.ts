@@ -1,8 +1,6 @@
-import { type ApiResponse } from "@workspace/common-dtos";
+import { type ApiResponse, JwtConfig } from "@workspace/backend-core";
 import { type NextFunction, type Request, type Response } from "express";
 import { jwtVerify } from "jose";
-
-import { jwtConfig } from "../config/index.js";
 
 declare global {
   namespace Express {
@@ -15,38 +13,40 @@ declare global {
   }
 }
 
-export const authenticateToken = async (
-  req: Request,
-  res: Response<ApiResponse<unknown>>,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+export const createAuthMiddleware = (jwtConfig: JwtConfig) => {
+  return async (
+    req: Request,
+    res: Response<ApiResponse<unknown>>,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
 
-    if (!token) {
-      res.status(401).json({
+      if (!token) {
+        res.status(401).json({
+          success: false,
+          error: "Access token required",
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
+
+      const secret = new TextEncoder().encode(jwtConfig.accessToken.secret);
+      const { payload } = await jwtVerify(token, secret);
+
+      req.user = {
+        id: payload.sub as string,
+        email: payload.email as string,
+      };
+
+      next();
+    } catch (error) {
+      res.status(403).json({
         success: false,
-        error: "Access token required",
+        error: "Invalid or expired token",
         timestamp: new Date().toISOString(),
       });
-      return;
     }
-
-    const secret = new TextEncoder().encode(jwtConfig.accessToken.secret);
-    const { payload } = await jwtVerify(token, secret);
-
-    req.user = {
-      id: payload.sub as string,
-      email: payload.email as string,
-    };
-
-    next();
-  } catch (error) {
-    res.status(403).json({
-      success: false,
-      error: "Invalid or expired token",
-      timestamp: new Date().toISOString(),
-    });
-  }
+  };
 };
