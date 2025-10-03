@@ -1,0 +1,22 @@
+{"ip":"::ffff:172.27.208.1","level":"http","message":"Incoming Request","method":"POST","service":"auth-service","timestamp":"2025-10-03T17:37:22.107Z","url":"/auth/login"}
+{"email":"apisix-test-final@example.com","ip":"::ffff:172.27.208.1","level":"info","message":"Login attempt started","service":"auth-service","timestamp":"2025-10-03T17:37:22.126Z"}
+{"duration":"329ms","email":"apisix-test-final@example.com","ip":"::ffff:172.27.208.1","level":"info","message":"Login successful","service":"auth-service","timestamp":"2025-10-03T17:37:22.455Z","userId":"37f532cc-6370-4f17-9165-11e5c747743a"}
+{"duration":"351ms","ip":"::ffff:172.27.208.1","level":"info","message":"Request Completed","method":"POST","service":"auth-service","status":200,"timestamp":"2025-10-03T17:37:22.458Z","url":"/login"}
+{"ip":"::ffff:172.27.208.1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-03T17:37:23.147Z","url":"/health"}
+{"duration":"1ms","ip":"::ffff:172.27.208.1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-03T17:37:23.148Z","url":"/health"}
+{"ip":"::ffff:172.27.208.1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-03T17:37:24.158Z","url":"/health"}
+{"duration":"1ms","ip":"::ffff:172.27.208.1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-03T17:37:24.159Z","url":"/health"}
+{"ip":"::ffff:172.27.208.1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-03T17:37:25.182Z","url":"/health"}
+{"duration":"1ms","ip":"::ffff:172.27.208.1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-03T17:37:25.183Z","url":"/health"}
+{"ip":"::ffff:172.27.208.1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-03T17:37:26.192Z","url":"/health"}
+{"duration":"1ms","ip":"::ffff:172.27.208.1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-03T17:37:26.193Z","url":"/health"}
+{"ip":"::ffff:172.27.208.1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-03T17:37:27.201Z","url":"/health"}
+{"duration":"1ms","ip":"::ffff:172.27.208.1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-03T17:37:27.202Z","url":"/health"}
+{"ip":"::ffff:172.27.208.1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-03T17:37:28.209Z","url":"/health"}
+{"duration":"1ms","ip":"::ffff:172.27.208.1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-03T17:37:28.210Z","url":"/health"}
+{"ip":"::ffff:172.27.208.1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-03T17:37:29.245Z","url":"/health"}
+{"duration":"1ms","ip":"::ffff:172.27.208.1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-03T17:37:29.246Z","url":"/health"}
+{"ip":"::ffff:172.27.208.1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-03T17:37:30.269Z","url":"/health"}
+{"duration":"2ms","ip":"::ffff:172.27.208.1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-03T17:37:30.271Z","url":"/health"}
+{"ip":"::ffff:172.27.208.1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-03T17:37:31.277Z","url":"/health"}
+{"duration":"1ms","ip":"::ffff:172.27.208.1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-03T17:37:31.278Z","url":"/health"}
