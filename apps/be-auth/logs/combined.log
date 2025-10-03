@@ -25,3 +25,25 @@
 {"duration":"35ms","email":"user@example.com","ip":"::1","level":"info","message":"Get user profile successful","service":"auth-service","timestamp":"2025-10-01T18:38:13.686Z","userId":"a31593e5-19b6-461a-9d30-ae7035991f0f"}
 {"duration":"36ms","email":"user@example.com","ip":"::1","level":"info","message":"Get user profile successful","service":"auth-service","timestamp":"2025-10-01T18:38:13.687Z","userId":"a31593e5-19b6-461a-9d30-ae7035991f0f"}
 {"duration":"45ms","ip":"::1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-01T18:38:13.688Z","url":"/profile"}
+{"ip":"::1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-02T07:52:09.199Z","url":"/health"}
+{"duration":"13ms","ip":"::1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-02T07:52:09.211Z","url":"/health"}
+{"ip":"::1","level":"http","message":"Incoming Request","method":"POST","service":"auth-service","timestamp":"2025-10-02T07:52:23.043Z","url":"/auth/login"}
+{"email":"user@example.com","ip":"::1","level":"info","message":"Login attempt started","service":"auth-service","timestamp":"2025-10-02T07:52:23.055Z"}
+{"duration":"337ms","email":"user@example.com","ip":"::1","level":"info","message":"Login successful","service":"auth-service","timestamp":"2025-10-02T07:52:23.392Z","userId":"a31593e5-19b6-461a-9d30-ae7035991f0f"}
+{"duration":"350ms","ip":"::1","level":"info","message":"Request Completed","method":"POST","service":"auth-service","status":200,"timestamp":"2025-10-02T07:52:23.393Z","url":"/login"}
+{"ip":"::1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-02T07:52:52.546Z","url":"/users/profile"}
+{"email":"user@example.com","ip":"::1","level":"info","message":"Get user profile request","service":"auth-service","timestamp":"2025-10-02T07:52:52.548Z","userId":"a31593e5-19b6-461a-9d30-ae7035991f0f"}
+{"duration":"2ms","email":"user@example.com","ip":"::1","level":"info","message":"Get user profile successful","service":"auth-service","timestamp":"2025-10-02T07:52:52.550Z","userId":"a31593e5-19b6-461a-9d30-ae7035991f0f"}
+{"duration":"3ms","email":"user@example.com","ip":"::1","level":"info","message":"Get user profile successful","service":"auth-service","timestamp":"2025-10-02T07:52:52.551Z","userId":"a31593e5-19b6-461a-9d30-ae7035991f0f"}
+{"duration":"5ms","ip":"::1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-02T07:52:52.551Z","url":"/profile"}
+{"ip":"::1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-03T12:34:53.302Z","url":"/users/profile"}
+{"duration":"10ms","ip":"::1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":403,"timestamp":"2025-10-03T12:34:53.311Z","url":"/profile"}
+{"ip":"::1","level":"http","message":"Incoming Request","method":"POST","service":"auth-service","timestamp":"2025-10-03T12:35:10.747Z","url":"/auth/login"}
+{"email":"user@example.com","ip":"::1","level":"info","message":"Login attempt started","service":"auth-service","timestamp":"2025-10-03T12:35:10.758Z"}
+{"duration":"391ms","email":"user@example.com","ip":"::1","level":"info","message":"Login successful","service":"auth-service","timestamp":"2025-10-03T12:35:11.149Z","userId":"a31593e5-19b6-461a-9d30-ae7035991f0f"}
+{"duration":"403ms","ip":"::1","level":"info","message":"Request Completed","method":"POST","service":"auth-service","status":200,"timestamp":"2025-10-03T12:35:11.150Z","url":"/login"}
+{"ip":"::1","level":"http","message":"Incoming Request","method":"GET","service":"auth-service","timestamp":"2025-10-03T12:35:26.092Z","url":"/users/profile"}
+{"email":"user@example.com","ip":"::1","level":"info","message":"Get user profile request","service":"auth-service","timestamp":"2025-10-03T12:35:26.093Z","userId":"a31593e5-19b6-461a-9d30-ae7035991f0f"}
+{"duration":"2ms","email":"user@example.com","ip":"::1","level":"info","message":"Get user profile successful","service":"auth-service","timestamp":"2025-10-03T12:35:26.095Z","userId":"a31593e5-19b6-461a-9d30-ae7035991f0f"}
+{"duration":"2ms","email":"user@example.com","ip":"::1","level":"info","message":"Get user profile successful","service":"auth-service","timestamp":"2025-10-03T12:35:26.095Z","userId":"a31593e5-19b6-461a-9d30-ae7035991f0f"}
+{"duration":"4ms","ip":"::1","level":"info","message":"Request Completed","method":"GET","service":"auth-service","status":200,"timestamp":"2025-10-03T12:35:26.096Z","url":"/profile"}
