@@ -1,28 +1,34 @@
 {
-  "upstreams": [
+  "list": [
     {
-      "id": "be-auth-upstream",
-      "name": "be-auth-upstream",
-      "type": "roundrobin",
-      "nodes": {
-        "host.docker.internal:4001": 1
-      },
-      "checks": {
-        "active": {
-          "type": "http",
-          "host": "host.docker.internal",
-          "port": 4001,
-          "http_path": "/health",
-          "healthy": {
-            "interval": 2,
-            "successes": 2
-          },
-          "unhealthy": {
-            "interval": 2,
-            "http_failures": 3
+      "value": {
+        "checks": {
+          "active": {
+            "type": "http",
+            "host": "172.27.223.199",
+            "healthy": { "interval": 30, "successes": 2, "http_statuses": [200, 302] },
+            "concurrency": 10,
+            "http_path": "/health",
+            "https_verify_certificate": true,
+            "timeout": 1,
+            "port": 4001,
+            "unhealthy": { "timeouts": 3, "interval": 30, "tcp_failures": 2, "http_failures": 5, "http_statuses": [429, 404, 500, 501, 502, 503, 504, 505] }
           }
-        }
-      }
+        },
+        "type": "roundrobin",
+        "scheme": "http",
+        "pass_host": "pass",
+        "hash_on": "vars",
+        "update_time": 1759313113,
+        "id": "1",
+        "create_time": 1759312966,
+        "name": "wsl2-backend",
+        "nodes": { "172.27.223.199:4001": 1 }
+      },
+      "key": "/apisix/upstreams/1",
+      "createdIndex": 315,
+      "modifiedIndex": 317
     }
-  ]
+  ],
+  "total": 1
 }
