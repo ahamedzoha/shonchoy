@@ -3,9 +3,12 @@ import { User } from "../database/entities";
 
 export interface CreateUserData {
   email: string;
-  password: string;
+  password?: string; // Optional for OAuth users
   firstName: string;
   lastName: string;
+  oauthProvider?: string;
+  oauthId?: string;
+  emailVerified?: boolean;
 }
 
 export interface LoginCredentials {

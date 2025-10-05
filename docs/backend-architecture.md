@@ -14,9 +14,10 @@ This document describes the comprehensive backend architecture for the Shonchoy 
 6. [Presentation Layer (Controllers)](#presentation-layer-controllers)
 7. [Infrastructure Layer](#infrastructure-layer)
 8. [Cross-Cutting Concerns](#cross-cutting-concerns)
-9. [Error Handling](#error-handling)
-10. [Testing Strategy](#testing-strategy)
-11. [Deployment & Scaling](#deployment--scaling)
+9. [Authentication Architecture](#authentication-architecture)
+10. [Error Handling](#error-handling)
+11. [Testing Strategy](#testing-strategy)
+12. [Deployment & Scaling](#deployment--scaling)
 
 ## Architecture Principles
 
@@ -40,7 +41,8 @@ This document describes the comprehensive backend architecture for the Shonchoy 
 - **Repository Pattern**: Abstract data access
 - **Dependency Injection**: Loose coupling between components
 - **Factory Pattern**: Object creation abstraction
-- **Strategy Pattern**: Interchangeable algorithms
+- **Strategy Pattern**: Interchangeable algorithms (used in Passport.js authentication)
+- **Middleware Pattern**: Request/response processing pipeline
 
 ## Package Structure
 
@@ -580,6 +582,145 @@ export const requestLoggingMiddleware = (
 
   next();
 };
+```
+
+## Authentication Architecture
+
+### Passport.js Integration
+
+The authentication system uses Passport.js as the authentication middleware framework, providing a flexible strategy-based approach to user authentication. This allows for easy integration of multiple authentication methods including traditional email/password and OAuth providers.
+
+#### Strategy Pattern Implementation
+
+```typescript
+// apps/be-auth/src/config/passport.ts
+export const configurePassport = (
+  authService: AuthService,
+  jwtConfig: JwtConfig
+) => {
+  // Local Strategy - Email/Password authentication
+  passport.use(
+    new LocalStrategy(
+      { usernameField: "email" },
+      async (email: string, password: string, done: DoneFunction) => {
+        try {
+          const user = await authService.authenticateUser({ email, password });
+          return done(null, user || false);
+        } catch (error) {
+          return done(error, false);
+        }
+      }
+    )
+  );
+
+  // JWT Strategy - Token validation
+  passport.use(
+    new JwtStrategy(
+      {
+        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+        secretOrKey: jwtConfig.accessToken.secret,
+      },
+      async (payload: JwtPayload, done: JwtDoneFunction) => {
+        try {
+          const user = await authService.findUserById(payload.sub);
+          return done(null, user || false);
+        } catch (error) {
+          return done(error, false);
+        }
+      }
+    )
+  );
+};
+```
+
+#### OAuth Strategy (Conditional Configuration)
+
+OAuth strategies are configured conditionally based on environment variables, allowing the application to work in development without OAuth credentials:
+
+```typescript
+// Google OAuth Strategy (only configured if credentials provided)
+if (
+  process.env.GOOGLE_CLIENT_ID &&
+  process.env.GOOGLE_CLIENT_SECRET &&
+  process.env.GOOGLE_CLIENT_ID !== "your-google-client-id" &&
+  process.env.GOOGLE_CLIENT_SECRET !== "your-google-client-secret"
+) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: `${process.env.BASE_URL}/auth/google/callback`,
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        // OAuth user creation/linking logic
+        const user = await authService.findUserByOAuthId("google", profile.id);
+        if (!user) {
+          // Create new user or link existing account
+          const newUser = await authService.createUser({
+            email: profile.emails?.[0]?.value,
+            firstName: profile.name?.givenName,
+            lastName: profile.name?.familyName,
+            oauthProvider: "google",
+            oauthId: profile.id,
+            emailVerified: true,
+          });
+          return done(null, newUser);
+        }
+        return done(null, user);
+      }
+    )
+  );
+}
+```
+
+### Authentication Flow
+
+#### Traditional Authentication
+
+1. **Client** sends login request with email/password
+2. **Passport Local Strategy** validates credentials via `AuthService.authenticateUser()`
+3. **JWT tokens** are generated and returned on successful authentication
+4. **Client** includes Bearer token in subsequent requests
+5. **Passport JWT Strategy** validates token on protected routes
+
+#### OAuth Authentication
+
+1. **Client** initiates OAuth flow (e.g., "Login with Google")
+2. **Passport OAuth Strategy** redirects to OAuth provider
+3. **OAuth Provider** handles user authentication and authorization
+4. **Provider** redirects back with authorization code
+5. **Strategy callback** exchanges code for user profile
+6. **User creation/linking** occurs if first-time OAuth user
+7. **JWT tokens** are generated and client is redirected with tokens
+
+### Security Features
+
+- **Password Hashing**: bcrypt with configurable salt rounds
+- **JWT Tokens**: HS256 signed with secure secrets
+- **Token Expiration**: Separate access/refresh token lifecycles
+- **OAuth State Protection**: CSRF protection via state parameter
+- **Secure Defaults**: Environment-based configuration validation
+
+### Database Schema Extensions
+
+OAuth support required additional fields in the User entity:
+
+```typescript
+// packages/backend-core/src/database/entities/User.ts
+@Entity("users")
+export class User {
+  // ... existing fields
+
+  @Column({ type: "varchar", nullable: true })
+  oauth_provider?: string; // 'google', 'github', 'apple'
+
+  @Column({ type: "varchar", nullable: true })
+  oauth_id?: string; // Provider-specific user ID
+
+  @Column({ type: "boolean", default: false })
+  emailVerified!: boolean; // OAuth emails are pre-verified
+}
 ```
 
 ## Error Handling

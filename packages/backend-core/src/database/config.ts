@@ -26,7 +26,7 @@ export const createDataSource = (config: DatabaseConfig) => {
     type: "postgres",
     ...config,
     synchronize: process.env.NODE_ENV === "development",
-    logging: process.env.NODE_ENV === "development",
+    // logging: process.env.NODE_ENV === "development",
     entities: [User, Session],
     migrations: ["dist/migrations/*.js"],
     extra: {

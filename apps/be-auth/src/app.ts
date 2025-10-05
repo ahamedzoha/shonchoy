@@ -11,7 +11,9 @@ import express, {
   type Response,
 } from "express";
 import helmet from "helmet";
+import passport from "passport";
 
+import { configurePassport } from "./config/passport";
 import { AuthController } from "./controllers/auth.controller";
 import { UserController } from "./controllers/user.controller";
 import {
@@ -35,6 +37,9 @@ export const createApp = (container: BackendContainer) => {
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true }));
 
+  // Initialize Passport
+  app.use(passport.initialize()); // No sessions for JWT-based auth
+
   // Health check
   app.get("/health", (req, res) => {
     res.json({
@@ -49,20 +54,21 @@ export const createApp = (container: BackendContainer) => {
   const userController = new UserController(container.userService);
 
   // Create routes with controllers and JWT config
+  // Note: JWT config is now validated at startup in index.ts
   const jwtConfig = {
     accessToken: {
-      secret:
-        process.env.JWT_ACCESS_SECRET ||
-        "your-super-secure-access-token-secret-here-at-least-32-chars",
+      secret: process.env.JWT_ACCESS_SECRET!, // Validated at startup
       expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "15m",
     },
     refreshToken: {
-      secret:
-        process.env.JWT_REFRESH_SECRET ||
-        "your-super-secure-refresh-token-secret-here-at-least-32-chars",
+      secret: process.env.JWT_REFRESH_SECRET!, // Validated at startup
       expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
     },
   };
+
+  // Configure Passport strategies
+  configurePassport(container.authService, jwtConfig);
+
   const authRoutes = createAuthRoutes(authController, jwtConfig);
   const userRoutes = createUserRoutes(userController, jwtConfig);
 

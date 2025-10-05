@@ -19,11 +19,11 @@ graph TD
     A --> G[Services]
     A --> C[Packages]
 
-    B --> D[be-auth<br/>✅ Express.js Auth Service]
+    B --> D[be-auth<br/>✅ Express.js Auth Service<br/>✅ Passport.js OAuth]
     B --> E[react-app<br/>Vite + React SPA]
     B --> F[web<br/>Next.js App]
 
-    C --> H[auth-types<br/>✅ Shared Auth Types]
+    C --> H[backend-core<br/>✅ Consolidated Auth & DB Layer]
     C --> I[common-dtos<br/>✅ Shared DTOs]
     C --> J[database-entities<br/>✅ DB Schemas]
     C --> K[ui<br/>Shared UI Components]
@@ -51,6 +51,60 @@ graph TD
     R --> X[ETCD<br/>Config Store]
 ```
 
+## Environment Configuration
+
+The monorepo uses a centralized environment configuration approach with all variables defined in the root `.env` file. This ensures consistent configuration across all services and simplifies deployment.
+
+### Key Features
+
+- **Centralized Configuration**: Single `.env` file at the repository root
+- **Turbo Integration**: All environment variables declared as global in `turbo.json`
+- **Conditional OAuth**: OAuth providers only enabled when valid credentials are provided
+- **Development Friendly**: Application works without OAuth setup during development
+- **Security First**: Comprehensive documentation of security best practices
+
+### Environment Variables Structure
+
+```bash
+# Core Environment
+ENVIRONMENT=development
+NODE_ENV=development
+
+# APISIX Gateway Configuration
+APISIX_ADMIN_URL=http://127.0.0.1:9180
+APISIX_ADMIN_KEY=...
+APISIX_VIEWER_KEY=...
+
+# Authentication Service
+PORT=4001
+BASE_URL=http://localhost:4001
+
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=shonchoy_auth
+DB_USER=postgres
+DB_PASSWORD=password
+
+# JWT Configuration
+JWT_ACCESS_SECRET=...
+JWT_REFRESH_SECRET=...
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+
+# OAuth Providers (Optional)
+GOOGLE_CLIENT_ID=your-google-client-id  # Disabled when using placeholder
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+```
+
+### OAuth Configuration
+
+OAuth providers are conditionally enabled based on environment variables:
+
+- **Development**: OAuth routes are not registered when using placeholder values
+- **Production**: OAuth fully enabled when valid provider credentials are configured
+- **Security**: Placeholder detection prevents accidental exposure of invalid credentials
+
 ## Apps Overview
 
 ### React Applications (Focus Areas)
@@ -77,13 +131,15 @@ graph TD
 
 #### be-auth (Express.js Auth Service) ✅
 
-- **Framework**: Express.js with TypeScript and modular architecture
-- **Features**: Complete JWT authentication, user management, PostgreSQL integration
-- **Security**: bcryptjs password hashing, JWT tokens, input validation
+- **Framework**: Express.js with TypeScript and Passport.js integration
+- **Features**: Complete JWT authentication, OAuth (Google), user management, PostgreSQL integration
+- **Security**: bcryptjs password hashing, JWT tokens, OAuth state protection, input validation
+- **Authentication**: Passport.js strategies for local login and OAuth providers
 - **Database**: PostgreSQL with connection pooling and session management
 - **API**: RESTful endpoints with proper error handling and TypeScript interfaces
+- **OAuth**: Conditional Google OAuth support (configurable via environment variables)
 - **Port**: Runs on port 4001 in development
-- **Status**: ✅ Fully functional with APISIX integration
+- **Status**: ✅ Fully functional with APISIX integration and OAuth support
 
 ### Services Overview
 

@@ -7,6 +7,12 @@ import {
 } from "@workspace/backend-core";
 import { type Request, type Response } from "express";
 
+// Type for authenticated user from JWT
+interface AuthUser {
+  id: string;
+  email: string;
+}
+
 const logger = createLogger("auth-service");
 
 export class UserController {
@@ -16,12 +22,12 @@ export class UserController {
     res: Response<ApiResponse<UserDto>>
   ): Promise<void> {
     const startTime = Date.now();
-    const userId = req.user?.id;
+    const userId = (req.user as AuthUser)?.id;
 
     try {
       logger.info("Get user profile request", {
         userId: userId,
-        email: req.user?.email,
+        email: (req.user as AuthUser)?.email,
         ip: req.ip,
       });
       if (!userId) {
@@ -42,7 +48,7 @@ export class UserController {
       if (!user) {
         logger.error("Get user profile error", {
           error: "User not found",
-          email: req.user?.email,
+          email: (req.user as AuthUser)?.email,
           userId: userId,
           ip: req.ip,
           duration: `${Date.now() - startTime}ms`,
@@ -87,7 +93,7 @@ export class UserController {
         error: error instanceof Error ? error.message : "Unknown error",
         stack: error instanceof Error ? error.stack : undefined,
         userId: userId,
-        email: req.user?.email,
+        email: (req.user as AuthUser)?.email,
         ip: req.ip,
         duration: `${Date.now() - startTime}ms`,
       });
@@ -182,7 +188,7 @@ export class UserController {
   ): Promise<void> {
     const startTime = Date.now();
     try {
-      const userId = req.user?.id;
+      const userId = (req.user as AuthUser)?.id;
       if (!userId) {
         logger.warn("Update profile failed - no user in request", {
           ip: req.ip,
@@ -240,8 +246,8 @@ export class UserController {
       logger.error("Update profile error", {
         error: error instanceof Error ? error.message : "Unknown error",
         stack: error instanceof Error ? error.stack : undefined,
-        userId: req.user?.id,
-        email: req.user?.email,
+        userId: (req.user as AuthUser)?.id,
+        email: (req.user as AuthUser)?.email,
         updates: req.body,
         ip: req.ip,
         duration: `${Date.now() - startTime}ms`,

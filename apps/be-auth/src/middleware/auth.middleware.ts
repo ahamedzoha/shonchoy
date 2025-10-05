@@ -1,17 +1,9 @@
 import type { ApiResponse, JwtConfig } from "@workspace/backend-core";
+import { createLogger } from "@workspace/backend-core";
 import type { NextFunction, Request, Response } from "express";
 import { jwtVerify } from "jose";
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        id: string;
-        email: string;
-      };
-    }
-  }
-}
+const logger = createLogger("auth-middleware");
 
 export const createAuthMiddleware = (jwtConfig: JwtConfig) => {
   return async (
@@ -42,6 +34,9 @@ export const createAuthMiddleware = (jwtConfig: JwtConfig) => {
 
       next();
     } catch (error) {
+      logger.error("JWT verification error", {
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
       res.status(403).json({
         success: false,
         error: "Invalid or expired token",

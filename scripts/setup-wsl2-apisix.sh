@@ -13,10 +13,10 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Configuration
-APISIX_ADMIN_URL="http://127.0.0.1:9180"
-APISIX_API_KEY="edd1c9f034335f136f87ad84b625c8f1"
-API_PORT=4001
+# Configuration (with environment variable fallbacks)
+APISIX_ADMIN_URL="${APISIX_ADMIN_URL:-http://127.0.0.1:9180}"
+APISIX_API_KEY="${APISIX_ADMIN_KEY:-edd1c9f034335f136f87ad84b625c8f1}"
+API_PORT="${PORT:-4001}"
 UPSTREAM_ID=1
 ROUTE_ID=1
 

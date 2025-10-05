@@ -7,14 +7,17 @@ This service leverages the consolidated `@workspace/backend-core` package for sh
 ## Features
 
 - 🔐 **JWT-based Authentication** - Access and refresh tokens with secure database storage
+- 🔑 **OAuth Integration** - Google OAuth with conditional configuration (GitHub/Apple ready)
 - 👤 **User Management** - Registration, login, profile management with TypeScript interfaces
-- 🛡️ **Security First** - bcryptjs password hashing, JWT validation, rate limiting via APISIX
+- 🛡️ **Security First** - bcryptjs password hashing, JWT validation, OAuth state protection, rate limiting via APISIX
 - 📊 **API Versioning** - Clean v1/v2 endpoint management via Apache APISIX gateway
 - 🔄 **Session Management** - Secure refresh token handling with database persistence
+- 🏗️ **Clean Architecture** - Dependency injection, repository pattern, and service layer separation
 - 📦 **Shared Architecture** - Reusable `@workspace/backend-core` package across all backend services
 - 🐳 **Docker Ready** - Complete containerized development environment
 - 📝 **Type-Safe** - Full TypeScript coverage with shared interfaces
-- 🏗️ **Clean Architecture** - Dependency injection, repository pattern, and service layer separation
+- 🎯 **Development Friendly** - Conditional OAuth (works without provider credentials)
+- 🔧 **Centralized Configuration** - Single `.env` file at monorepo root
 
 ## Architecture
 
@@ -75,12 +78,14 @@ packages/backend-core/
 
 ### Authentication (`/v1/auth/*`)
 
-| Method | Endpoint            | Description          | Auth Required |
-| ------ | ------------------- | -------------------- | ------------- |
-| POST   | `/v1/auth/login`    | User login           | No            |
-| POST   | `/v1/auth/register` | User registration    | No            |
-| POST   | `/v1/auth/refresh`  | Refresh access token | No            |
-| POST   | `/v1/auth/logout`   | User logout          | Yes           |
+| Method | Endpoint                   | Description                 | Auth Required |
+| ------ | -------------------------- | --------------------------- | ------------- |
+| POST   | `/v1/auth/login`           | User login (email/password) | No            |
+| POST   | `/v1/auth/register`        | User registration           | No            |
+| POST   | `/v1/auth/refresh`         | Refresh access token        | No            |
+| POST   | `/v1/auth/logout`          | User logout                 | Yes           |
+| GET    | `/v1/auth/google`          | Google OAuth initiation     | No            |
+| GET    | `/v1/auth/google/callback` | Google OAuth callback       | No            |
 
 ### User Management (`/v1/users/*`)
 
@@ -126,8 +131,9 @@ packages/backend-core/
 3. **Set up environment variables:**
 
    ```bash
-   cp .env.example .env
-   # The .env file is already configured for Docker development
+   # The .env file is already configured in the monorepo root
+   # Ensure JWT_ACCESS_SECRET and JWT_REFRESH_SECRET are set to real 32+ character secrets
+   # The app will validate all environment variables at startup and fail gracefully if misconfigured
    ```
 
 4. **Start the auth service:**
@@ -135,6 +141,8 @@ packages/backend-core/
    ```bash
    pnpm dev
    ```
+
+   The service will perform environment validation on startup. If validation fails, you'll see clear error messages explaining what's wrong.
 
 The service will be available at `http://localhost:4001`
 
@@ -274,22 +282,71 @@ pnpm test:e2e
 
 ## Environment Variables
 
-| Variable                 | Description              | Default         |
-| ------------------------ | ------------------------ | --------------- |
-| `PORT`                   | Server port              | `4001`          |
-| `DB_HOST`                | PostgreSQL host          | `localhost`     |
-| `DB_PORT`                | PostgreSQL port          | `5432`          |
-| `DB_NAME`                | Database name            | `shonchoy_auth` |
-| `DB_USER`                | Database user            | `postgres`      |
-| `DB_PASSWORD`            | Database password        | `password`      |
-| `JWT_ACCESS_SECRET`      | JWT access token secret  | Required        |
-| `JWT_REFRESH_SECRET`     | JWT refresh token secret | Required        |
-| `JWT_ACCESS_EXPIRES_IN`  | Access token expiry      | `15m`           |
-| `JWT_REFRESH_EXPIRES_IN` | Refresh token expiry     | `7d`            |
-| `APISIX_ADMIN_KEY`       | APISIX admin API key     | Required        |
-| `APISIX_VIEWER_KEY`      | APISIX viewer API key    | Required        |
-| `ETCD_HOST`              | ETCD cluster endpoint    | `etcd:2379`     |
-| `ENVIRONMENT`            | Deployment environment   | `development`   |
+The application uses comprehensive environment variable validation that ensures all required variables are properly configured before startup. The app will fail to start with clear error messages if any required variables are missing or invalid.
+
+### Required Variables (Development)
+
+| Variable             | Description              | Validation Requirements                                   |
+| -------------------- | ------------------------ | --------------------------------------------------------- |
+| `ENVIRONMENT`        | Deployment environment   | Must be "development", "production", or "test"            |
+| `DB_HOST`            | PostgreSQL host          | Required, non-empty string                                |
+| `DB_PORT`            | PostgreSQL port          | Integer 1-65535, default 5432                             |
+| `DB_NAME`            | Database name            | Required, non-empty string                                |
+| `DB_USER`            | Database user            | Required, non-empty string                                |
+| `DB_PASSWORD`        | Database password        | Required, non-empty string                                |
+| `JWT_ACCESS_SECRET`  | JWT access token secret  | **Must be at least 32 characters, cannot be placeholder** |
+| `JWT_REFRESH_SECRET` | JWT refresh token secret | **Must be at least 32 characters, cannot be placeholder** |
+
+### Optional Variables
+
+| Variable                 | Description                  | Default                 | Notes                               |
+| ------------------------ | ---------------------------- | ----------------------- | ----------------------------------- |
+| `PORT`                   | Server port                  | `4001`                  | Integer 1-65535                     |
+| `BASE_URL`               | Base URL for the application | `http://localhost:4001` | Must be valid URL                   |
+| `JWT_ACCESS_EXPIRES_IN`  | Access token expiry          | `15m`                   | JWT duration string                 |
+| `JWT_REFRESH_EXPIRES_IN` | Refresh token expiry         | `7d`                    | JWT duration string                 |
+| `NODE_ENV`               | Node environment             | `development`           | "development", "production", "test" |
+
+### OAuth Configuration (Optional)
+
+Google OAuth is automatically enabled when valid credentials are provided:
+
+| Variable               | Description                | Requirements                   |
+| ---------------------- | -------------------------- | ------------------------------ |
+| `GOOGLE_CLIENT_ID`     | Google OAuth client ID     | Must not be placeholder values |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | Must not be placeholder values |
+
+**Note:** OAuth routes are only registered when valid credentials are configured. Invalid or placeholder credentials will disable OAuth entirely.
+
+### APISIX Configuration (Optional)
+
+APISIX integration is enabled when all gateway variables are configured:
+
+| Variable            | Description           |
+| ------------------- | --------------------- |
+| `APISIX_ADMIN_KEY`  | APISIX admin API key  |
+| `APISIX_VIEWER_KEY` | APISIX viewer API key |
+| `ETCD_HOST`         | ETCD cluster endpoint |
+
+### Environment Validation
+
+The application performs strict validation at startup:
+
+- **Early Validation**: All environment variables are validated before any other initialization
+- **Clear Error Messages**: Invalid configurations show specific error messages
+- **Graceful Failure**: App exits with code 1 and helpful guidance when validation fails
+- **Environment-Specific Rules**: Different validation rules for development/production/test
+
+**Example validation error:**
+
+```
+❌ Environment Configuration Error
+=================================
+JWT_ACCESS_SECRET must be at least 32 characters long
+JWT_REFRESH_SECRET must be set to a real secret, not a placeholder
+
+Please check your .env file and ensure all required variables are set correctly.
+```
 
 ## Contributing
 
@@ -303,40 +360,71 @@ pnpm test:e2e
 
 ✅ **Completed Features:**
 
-- Complete JWT authentication with access/refresh tokens
-- User registration and login with bcryptjs password hashing
-- Protected user profile and user listing endpoints
-- PostgreSQL database with TypeORM entities and migrations
-- Docker Compose setup with PostgreSQL, APISIX, and ETCD
-- **Consolidated `@workspace/backend-core` package** with:
-  - TypeORM entities and repositories
-  - Dependency injection container
-  - Service layer with clean architecture
-  - Shared business logic across services
-- TypeScript interfaces and shared packages
-- Health check endpoint
-- Token refresh functionality
-- Session management with database persistence
-- Clean separation of concerns (controllers, services, repositories)
-- Winston-based structured logging
+- **Complete Authentication System:**
+  - JWT-based authentication with access/refresh tokens
+  - Google OAuth integration with conditional configuration
+  - Passport.js strategy pattern implementation
+  - Bcryptjs password hashing with configurable salt rounds
+  - Secure token storage and validation
+
+- **User Management:**
+  - User registration and login endpoints
+  - Protected user profile and user listing endpoints
+  - OAuth user creation and account linking
+  - Email verification support for OAuth users
+
+- **Database & Architecture:**
+  - PostgreSQL database with TypeORM entities and migrations
+  - Consolidated `@workspace/backend-core` package
+  - Dependency injection container with clean architecture
+  - Repository pattern with TypeORM implementations
+  - Service layer with business logic separation
+
+- **API Gateway Integration:**
+  - Apache APISIX gateway with JWT validation
+  - Public/private route segregation
+  - WSL2-compatible configuration scripts
+  - Secure API routing with consumer authentication
+
+- **Development & Deployment:**
+  - Docker Compose setup with PostgreSQL, APISIX, and ETCD
+  - Centralized environment configuration
+  - TypeScript interfaces and shared packages
+  - Health check endpoint and monitoring
+  - Token refresh functionality with database persistence
+
+- **Security & Quality:**
+  - Clean separation of concerns (controllers, services, repositories)
+  - Winston-based structured logging
+  - ESLint and TypeScript strict mode compliance
+  - Conditional OAuth (development-friendly)
+  - CSRF protection via OAuth state parameters
+
+- **Environment Configuration & Validation:**
+  - Comprehensive environment variable validation with Zod schemas
+  - Early validation that fails gracefully with clear error messages
+  - Environment-specific validation rules (development/production/test)
+  - Automatic OAuth and APISIX feature detection
+  - Secure JWT secret validation (no placeholder values allowed)
 
 🚧 **In Development:**
 
 - Input validation middleware (express-validator)
-- Rate limiting via APISIX plugins
-- Comprehensive test suite
+- Comprehensive test suite with unit/integration tests
 - API documentation generation (OpenAPI/Swagger)
-- Database migration scripts
+- Database migration scripts and seeding
+- Rate limiting via APISIX plugins
 
 📋 **Future Enhancements:**
 
-- OAuth integration (Google, Apple)
-- Multi-factor authentication
+- Additional OAuth providers (GitHub, Apple - infrastructure ready)
+- Multi-factor authentication (2FA)
 - Password reset functionality
 - Admin user management and RBAC
 - Audit logging and monitoring
 - API rate limiting and caching
 - Service mesh integration
+- Email/SMS notifications
 
 ## License
 

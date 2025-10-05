@@ -1,6 +1,7 @@
-import { JwtConfig } from "@workspace/backend-core";
+import type { JwtConfig } from "@workspace/backend-core";
 import { Router } from "express";
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import { UserController } from "../controllers/user.controller";
 import { createAuthMiddleware } from "../middleware/auth.middleware";
 

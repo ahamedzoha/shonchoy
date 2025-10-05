@@ -8,6 +8,7 @@ import {
   IUserRepository,
 } from "../repositories/interfaces";
 import { AuthTokens, CreateUserData, LoginCredentials } from "../types/auth";
+import { CreateUserDto } from "../types/user";
 import { BaseService } from "./BaseService";
 
 export class AuthService extends BaseService {
@@ -27,15 +28,33 @@ export class AuthService extends BaseService {
     return this.userRepository.findById(id);
   }
 
+  async findUserByOAuthId(
+    provider: string,
+    providerId: string
+  ): Promise<User | null> {
+    return this.userRepository.findByOAuthId(provider, providerId);
+  }
+
   async createUser(userData: CreateUserData): Promise<User> {
-    const hashedPassword = await this.hashPassword(userData.password);
+    const hashedPassword = userData.password
+      ? await this.hashPassword(userData.password)
+      : null;
+
+    console.log("hashedPassword", hashedPassword);
 
     return this.userRepository.create({
       email: userData.email,
       password_hash: hashedPassword,
       firstName: userData.firstName,
       lastName: userData.lastName,
+      oauth_provider: userData.oauthProvider,
+      oauth_id: userData.oauthId,
+      emailVerified: userData.emailVerified || false,
     });
+  }
+
+  async updateUser(id: string, updates: Partial<User>): Promise<User | null> {
+    return this.userRepository.update(id, updates);
   }
 
   async hashPassword(password: string): Promise<string> {
@@ -91,6 +110,9 @@ export class AuthService extends BaseService {
   async authenticateUser(credentials: LoginCredentials): Promise<User | null> {
     const user = await this.findUserByEmail(credentials.email);
     if (!user) return null;
+
+    // OAuth users don't have passwords
+    if (!user.password_hash) return null;
 
     const isValidPassword = await this.verifyPassword(
       credentials.password,

@@ -2,124 +2,105 @@ import {
   type ApiResponse,
   type AuthService,
   type AuthTokens,
-  type LoginInput as LoginDto,
   type RegisterInput as RegisterDto,
   createLogger,
 } from "@workspace/backend-core";
 import { type Request, type Response } from "express";
+import passport from "passport";
 
 const logger = createLogger("auth-service");
 
+/**
+ * Simplified AuthController using Passport.js strategies
+ * Much cleaner and more maintainable than manual validation
+ */
 export class AuthController {
   constructor(private authService: AuthService) {}
-  async login(
-    req: Request,
-    res: Response<ApiResponse<AuthTokens>>
-  ): Promise<void> {
-    const startTime = Date.now();
-    const { email, password }: LoginDto = req.body;
 
-    try {
-      logger.info("Login attempt started", {
-        email,
-        ip: req.ip,
-        userAgent: req.headers["User-Agent"],
-      });
-      const user = await this.authService.findUserByEmail(email);
-      if (!user) {
-        logger.warn("Login attempt failed - user not found", {
-          email,
-          ip: req.ip,
-          duration: `${Date.now() - startTime}ms`,
-        });
-        res.status(401).json({
-          success: false,
-          error: "Invalid credentials",
-          timestamp: new Date().toISOString(),
-        });
-        return;
+  /**
+   * Local authentication (email/password) using Passport Local strategy
+   */
+  login(req: Request, res: Response<ApiResponse<AuthTokens>>): void {
+    passport.authenticate(
+      "local",
+      { session: false },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      async (err: any, user: any, info: any) => {
+        if (err) {
+          logger.error("Login error", { error: err.message });
+          res.status(500).json({
+            success: false,
+            error: "Authentication error",
+            timestamp: new Date().toISOString(),
+          });
+          return;
+        }
+
+        if (!user) {
+          logger.warn("Login failed", {
+            reason: info?.message || "Invalid credentials",
+          });
+          res.status(401).json({
+            success: false,
+            error: info?.message || "Invalid credentials",
+            timestamp: new Date().toISOString(),
+          });
+          return;
+        }
+
+        try {
+          // Generate JWT tokens using existing service
+          const [accessToken, refreshToken] = await Promise.all([
+            this.authService.createAccessToken(user),
+            this.authService.createRefreshToken(user),
+          ]);
+
+          // Create server-side session for refresh token
+          await this.authService.createUserSession(user.id, refreshToken);
+
+          const tokens: AuthTokens = {
+            accessToken,
+            refreshToken,
+            expiresIn: 900, // 15 minutes
+          };
+
+          logger.info("Login successful", {
+            userId: user.id,
+            email: user.email,
+          });
+          res.json({
+            success: true,
+            data: tokens,
+            timestamp: new Date().toISOString(),
+          });
+        } catch (error) {
+          logger.error("Token generation error", {
+            error: error instanceof Error ? error.message : "Unknown",
+          });
+          res.status(500).json({
+            success: false,
+            error: "Token generation failed",
+            timestamp: new Date().toISOString(),
+          });
+        }
       }
-
-      const isValidPassword = await this.authService.verifyPassword(
-        password,
-        user.password_hash
-      );
-      if (!isValidPassword) {
-        logger.warn("Login attempt failed - invalid password", {
-          email,
-          ip: req.ip,
-          duration: `${Date.now() - startTime}ms`,
-        });
-        res.status(401).json({
-          success: false,
-          error: "Invalid credentials",
-          timestamp: new Date().toISOString(),
-        });
-        return;
-      }
-
-      const [accessToken, refreshToken] = await Promise.all([
-        this.authService.createAccessToken(user),
-        this.authService.createRefreshToken(user),
-      ]);
-
-      // Create session
-      await this.authService.createUserSession(user.id, refreshToken);
-
-      const tokens: AuthTokens = {
-        accessToken,
-        refreshToken,
-        expiresIn: 900, // 15 minutes
-      };
-
-      logger.info("Login successful", {
-        userId: user.id,
-        email,
-        ip: req.ip,
-        userAgent: req.headers["User-Agent"],
-        duration: `${Date.now() - startTime}ms`,
-      });
-      res.json({
-        success: true,
-        data: tokens,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (error) {
-      console.error("Login error:", error);
-      logger.error("Login error", {
-        error: error instanceof Error ? error.message : "Unknown error",
-        stack: error instanceof Error ? error.stack : undefined,
-        ip: req.ip,
-        email,
-        userAgent: req.headers["User-Agent"],
-        duration: `${Date.now() - startTime}ms`,
-      });
-      res.status(500).json({
-        success: false,
-        error: "Internal server error",
-        timestamp: new Date().toISOString(),
-      });
-    }
+    )(req, res);
   }
 
+  /**
+   * User registration with manual validation
+   */
   async register(
     req: Request,
     res: Response<ApiResponse<AuthTokens>>
   ): Promise<void> {
-    const startTime = Date.now();
     try {
       const { email, password, firstName, lastName }: RegisterDto = req.body;
 
       // Check if user already exists
       const existingUser = await this.authService.findUserByEmail(email);
       if (existingUser) {
-        logger.warn("Register attempt failed - user already exists", {
-          email,
-          firstName,
-          lastName,
-          ip: req.ip,
-          duration: `${Date.now() - startTime}ms`,
-        });
+        logger.warn("Register attempt failed - user already exists", { email });
         res.status(409).json({
           success: false,
           error: "User already exists",
@@ -128,13 +109,10 @@ export class AuthController {
         return;
       }
 
-      // Hash password
-      const passwordHash = await this.authService.hashPassword(password);
-
       // Create user
       const user = await this.authService.createUser({
         email,
-        password: passwordHash,
+        password,
         firstName,
         lastName,
       });
@@ -154,13 +132,7 @@ export class AuthController {
         expiresIn: 900,
       };
 
-      logger.info("Register successful", {
-        userId: user.id,
-        email,
-        ip: req.ip,
-        userAgent: req.headers["User-Agent"],
-        duration: `${Date.now() - startTime}ms`,
-      });
+      logger.info("Register successful", { userId: user.id, email });
 
       res.status(201).json({
         success: true,
@@ -169,11 +141,7 @@ export class AuthController {
       });
     } catch (error) {
       logger.error("Register error", {
-        error: error instanceof Error ? error.message : "Unknown error",
-        stack: error instanceof Error ? error.stack : undefined,
-        ip: req.ip,
-        userAgent: req.headers["User-Agent"],
-        duration: `${Date.now() - startTime}ms`,
+        error: error instanceof Error ? error.message : "Unknown",
       });
       res.status(500).json({
         success: false,
@@ -183,22 +151,75 @@ export class AuthController {
     }
   }
 
+  /**
+   * OAuth callback handler - generates tokens after successful OAuth
+   */
+  async oauthCallback(
+    req: Request,
+    res: Response<ApiResponse<AuthTokens>>
+  ): Promise<void> {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const user = req.user as any;
+
+      if (!user) {
+        res.status(401).json({
+          success: false,
+          error: "OAuth authentication failed",
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
+
+      // Generate JWT tokens using existing service
+      const [accessToken, refreshToken] = await Promise.all([
+        this.authService.createAccessToken(user),
+        this.authService.createRefreshToken(user),
+      ]);
+
+      // Create server-side session for refresh token
+      await this.authService.createUserSession(user.id, refreshToken);
+
+      const tokens: AuthTokens = {
+        accessToken,
+        refreshToken,
+        expiresIn: 900,
+      };
+
+      logger.info("OAuth login successful", {
+        userId: user.id,
+        email: user.email,
+        provider: user.oauth_provider,
+      });
+
+      res.json({
+        success: true,
+        data: tokens,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      logger.error("OAuth callback error", {
+        error: error instanceof Error ? error.message : "Unknown",
+      });
+      res.status(500).json({
+        success: false,
+        error: "OAuth callback failed",
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  /**
+   * Refresh access token using valid refresh token
+   */
   async refreshToken(
     req: Request,
     res: Response<ApiResponse<AuthTokens>>
   ): Promise<void> {
-    const startTime = Date.now();
     try {
       const { refreshToken } = req.body;
-      logger.info("Refresh token attempt started", {
-        ip: req.ip,
-        duration: `${Date.now() - startTime}ms`,
-      });
+
       if (!refreshToken) {
-        logger.warn("Refresh token attempt failed - refresh token required", {
-          ip: req.ip,
-          duration: `${Date.now() - startTime}ms`,
-        });
         res.status(400).json({
           success: false,
           error: "Refresh token required",
@@ -210,13 +231,7 @@ export class AuthController {
       // Verify refresh token and get session
       const session = await this.authService.findValidSession(refreshToken);
       if (!session) {
-        logger.warn(
-          "Refresh token attempt failed - invalid or expired refresh token",
-          {
-            ip: req.ip,
-            duration: `${Date.now() - startTime}ms`,
-          }
-        );
+        logger.warn("Invalid or expired refresh token");
         res.status(401).json({
           success: false,
           error: "Invalid or expired refresh token",
@@ -228,10 +243,7 @@ export class AuthController {
       // Get user
       const user = await this.authService.findUserById(session.userId);
       if (!user) {
-        logger.warn("Refresh token attempt failed - user not found", {
-          ip: req.ip,
-          duration: `${Date.now() - startTime}ms`,
-        });
+        logger.warn("User not found for refresh token");
         res.status(401).json({
           success: false,
           error: "User not found",
@@ -256,11 +268,7 @@ export class AuthController {
         expiresIn: 900,
       };
 
-      logger.info("Refresh token successful", {
-        userId: user.id,
-        ip: req.ip,
-        duration: `${Date.now() - startTime}ms`,
-      });
+      logger.info("Token refresh successful", { userId: user.id });
 
       res.json({
         success: true,
@@ -269,10 +277,7 @@ export class AuthController {
       });
     } catch (error) {
       logger.error("Refresh token error", {
-        error: error instanceof Error ? error.message : "Unknown error",
-        stack: error instanceof Error ? error.stack : undefined,
-        ip: req.ip,
-        duration: `${Date.now() - startTime}ms`,
+        error: error instanceof Error ? error.message : "Unknown",
       });
       res.status(500).json({
         success: false,
@@ -282,18 +287,17 @@ export class AuthController {
     }
   }
 
+  /**
+   * Logout - revoke refresh token session
+   */
   async logout(req: Request, res: Response<ApiResponse>): Promise<void> {
-    const startTime = Date.now();
     try {
       const { refreshToken } = req.body;
-      const user = req.user;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const user = req.user as any;
 
       if (user && refreshToken) {
-        logger.info("Logout attempt started", {
-          userId: user.id,
-          ip: req.ip,
-          duration: `${Date.now() - startTime}ms`,
-        });
+        logger.info("Logout", { userId: user.id });
         await this.authService.revokeUserSession(user.id, refreshToken);
       }
 
@@ -304,10 +308,7 @@ export class AuthController {
       });
     } catch (error) {
       logger.error("Logout error", {
-        error: error instanceof Error ? error.message : "Unknown error",
-        stack: error instanceof Error ? error.stack : undefined,
-        ip: req.ip,
-        duration: `${Date.now() - startTime}ms`,
+        error: error instanceof Error ? error.message : "Unknown",
       });
       res.status(500).json({
         success: false,

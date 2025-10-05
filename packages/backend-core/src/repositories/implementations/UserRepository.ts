@@ -14,6 +14,15 @@ export class UserRepository implements IUserRepository {
     return this.repository.findOne({ where: { id } });
   }
 
+  async findByOAuthId(
+    provider: string,
+    providerId: string
+  ): Promise<User | null> {
+    return this.repository.findOne({
+      where: { oauth_provider: provider, oauth_id: providerId },
+    });
+  }
+
   async create(userData: Partial<User>): Promise<User> {
     const user = this.repository.create(userData);
     return this.repository.save(user);

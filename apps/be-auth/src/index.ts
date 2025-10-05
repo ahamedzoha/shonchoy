@@ -1,31 +1,51 @@
 import { BackendContainer } from "@workspace/backend-core";
+import { createLogger } from "@workspace/backend-core";
+import { config } from "dotenv";
 
 import { createApp } from "./app.js";
+import { getEnvironmentSummary, validateEnvironment } from "./config/env.js";
 
-// eslint-disable-next-line turbo/no-undeclared-env-vars
-const PORT = process.env.PORT || 4001;
+// Load environment variables from .env file (located in monorepo root)
+config({ path: "../../.env" });
 
-// Initialize the backend container with configuration
+const logger = createLogger("auth-service");
+
+// Validate environment variables early in startup
+let validatedEnv;
+try {
+  validatedEnv = validateEnvironment();
+  logger.info("Environment validation successful", getEnvironmentSummary());
+} catch (error) {
+  logger.error("Environment validation failed:", {
+    error: error instanceof Error ? error.message : String(error),
+  });
+  console.error("\n❌ Environment Configuration Error");
+  console.error("=================================");
+  console.error(error instanceof Error ? error.message : String(error));
+  console.error(
+    "\nPlease check your .env file and ensure all required variables are set correctly."
+  );
+  console.error("See README.md for environment setup instructions.\n");
+  process.exit(1);
+}
+
+// Initialize the backend container with validated configuration
 const container = new BackendContainer({
   // Database config
-  host: process.env.DB_HOST || "localhost",
-  port: parseInt(process.env.DB_PORT || "5432"),
-  username: process.env.DB_USER || "postgres",
-  password: process.env.DB_PASSWORD || "password",
-  database: process.env.DB_NAME || "shonchoy_auth",
+  host: validatedEnv.env.DB_HOST,
+  port: validatedEnv.env.DB_PORT,
+  username: validatedEnv.env.DB_USER,
+  password: validatedEnv.env.DB_PASSWORD,
+  database: validatedEnv.env.DB_NAME,
 
   // JWT config (only needed for services, not container)
   accessToken: {
-    secret:
-      process.env.JWT_ACCESS_SECRET ||
-      "your-super-secure-access-token-secret-here-at-least-32-chars",
-    expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "15m",
+    secret: validatedEnv.env.JWT_ACCESS_SECRET,
+    expiresIn: validatedEnv.env.JWT_ACCESS_EXPIRES_IN,
   },
   refreshToken: {
-    secret:
-      process.env.JWT_REFRESH_SECRET ||
-      "your-super-secure-refresh-token-secret-here-at-least-32-chars",
-    expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
+    secret: validatedEnv.env.JWT_REFRESH_SECRET,
+    expiresIn: validatedEnv.env.JWT_REFRESH_EXPIRES_IN,
   },
 });
 
@@ -37,16 +57,35 @@ container
     const app = createApp(container);
 
     // Start the server
-    app.listen(PORT, () => {
+    app.listen(validatedEnv.env.PORT, () => {
+      logger.info("Server started successfully", {
+        port: validatedEnv.env.PORT,
+        environment: validatedEnv.env.ENVIRONMENT,
+        baseUrl: validatedEnv.env.BASE_URL,
+        oauthEnabled: validatedEnv.isOAuthEnabled,
+        apisixEnabled: validatedEnv.isApisixEnabled,
+      });
+
       console.log(
-        `🚀 Shonchoy Auth Server running on http://localhost:${PORT}`
+        `🚀 Shonchoy Auth Server running on ${validatedEnv.env.BASE_URL}`
       );
-      console.log(`📊 Health check: http://localhost:${PORT}/health`);
-      console.log(`🔐 Auth endpoints: http://localhost:${PORT}/auth/*`);
-      console.log(`👤 User endpoints: http://localhost:${PORT}/users/*`);
+      console.log(`📊 Health check: ${validatedEnv.env.BASE_URL}/health`);
+      console.log(`🔐 Auth endpoints: ${validatedEnv.env.BASE_URL}/auth/*`);
+      console.log(`👤 User endpoints: ${validatedEnv.env.BASE_URL}/users/*`);
+
+      if (validatedEnv.isOAuthEnabled) {
+        console.log(
+          `🔑 OAuth enabled: ${validatedEnv.env.BASE_URL}/auth/google`
+        );
+      } else {
+        console.log(
+          `🔒 OAuth disabled (configure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable)`
+        );
+      }
     });
   })
   .catch((error) => {
-    console.error("Failed to initialize application:", error);
+    logger.error("Failed to initialize application", { error: error.message });
+    console.error("❌ Failed to initialize application:", error.message);
     process.exit(1);
   });

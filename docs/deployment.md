@@ -65,6 +65,124 @@ docker-compose logs etcd
 docker-compose logs apisix-dashboard
 ```
 
+## Environment Configuration
+
+The monorepo uses centralized environment configuration with all variables defined in the root `.env` file. This section covers the essential configuration for different deployment environments.
+
+### Environment Variables Setup
+
+1. **Copy the example configuration:**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Configure environment-specific values** in `.env`:
+
+   ```bash
+   # Core Environment
+   ENVIRONMENT=production
+   NODE_ENV=production
+
+   # APISIX Configuration
+   APISIX_ADMIN_URL=https://your-apisix-admin.example.com
+   APISIX_ADMIN_KEY=your-secure-admin-key
+   APISIX_VIEWER_KEY=your-secure-viewer-key
+
+   # Authentication Service
+   PORT=4001
+   BASE_URL=https://your-api.example.com
+
+   # Database (Production)
+   DB_HOST=your-db-host
+   DB_PORT=5432
+   DB_NAME=shonchoy_auth
+   DB_USER=your-db-user
+   DB_PASSWORD=your-secure-db-password
+
+   # JWT Secrets (Generate new ones for production)
+   JWT_ACCESS_SECRET=your-256-bit-access-secret-key
+   JWT_REFRESH_SECRET=your-256-bit-refresh-secret-key
+   JWT_ACCESS_EXPIRES_IN=15m
+   JWT_REFRESH_EXPIRES_IN=7d
+   ```
+
+### OAuth Provider Configuration
+
+OAuth providers are optional and conditionally enabled. Configure only the providers you want to support:
+
+#### Google OAuth Setup
+
+1. **Create OAuth Credentials:**
+   - Go to [Google Cloud Console](https://console.developers.google.com/)
+   - Create/select a project
+   - Enable Google+ API
+   - Create OAuth 2.0 credentials
+   - Add authorized redirect URIs: `https://your-domain.com/auth/google/callback`
+
+2. **Configure Environment Variables:**
+
+   ```bash
+   GOOGLE_CLIENT_ID=your-actual-google-client-id.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=your-actual-google-client-secret
+   ```
+
+3. **Security Notes:**
+   - Use different credentials for each environment
+   - Restrict redirect URIs to your domain only
+   - Regularly rotate client secrets
+
+#### Other OAuth Providers
+
+The same pattern applies to GitHub, Apple, and other OAuth providers. The application automatically detects valid credentials and enables the corresponding authentication routes.
+
+### Database Configuration
+
+#### Production Database Setup
+
+1. **Use a managed database service:**
+   - AWS RDS PostgreSQL
+   - Google Cloud SQL
+   - Azure Database for PostgreSQL
+   - DigitalOcean Managed Databases
+
+2. **Configure connection pooling:**
+
+   ```bash
+   DB_HOST=your-production-db-host
+   DB_PORT=5432
+   DB_NAME=shonchoy_auth
+   DB_USER=your-db-username
+   DB_PASSWORD=your-secure-password
+   ```
+
+3. **Enable SSL/TLS:**
+   - Most managed services require/enable SSL by default
+   - Set `DB_SSL=true` if your provider supports it
+
+### Security Best Practices
+
+#### JWT Token Security
+
+- **Generate strong secrets:** Use 256-bit keys for HS256 algorithm
+- **Rotate secrets regularly:** Change access/refresh secrets periodically
+- **Different secrets per environment:** Never share secrets between dev/staging/production
+- **Secure storage:** Store secrets in environment variables, not code
+
+#### OAuth Security
+
+- **State parameter protection:** Enabled by default to prevent CSRF
+- **PKCE support:** Recommended for public clients (mobile/SPAs)
+- **Secure redirect URIs:** Restrict to your domain only
+- **Token storage:** Never store tokens in localStorage for production SPAs
+
+#### Environment Variable Security
+
+- **Never commit secrets:** Use `.env` files that are gitignored
+- **Use secret management:** Consider AWS Secrets Manager, HashiCorp Vault, etc.
+- **Environment segregation:** Different secrets for each deployment environment
+- **Access control:** Limit who can view/modify production secrets
+
 ## Production Deployment Options
 
 ### 1. Managed ETCD Services (Recommended)
