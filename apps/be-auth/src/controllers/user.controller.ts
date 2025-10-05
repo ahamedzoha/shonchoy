@@ -2,7 +2,7 @@ import {
   type ApiResponse,
   type PaginatedResponse,
   type UserDto,
-  UserService,
+  type UserService,
   createLogger,
 } from "@workspace/backend-core";
 import { type Request, type Response } from "express";

@@ -1,5 +1,5 @@
-import { type ApiResponse, JwtConfig } from "@workspace/backend-core";
-import { type NextFunction, type Request, type Response } from "express";
+import type { ApiResponse, JwtConfig } from "@workspace/backend-core";
+import type { NextFunction, Request, Response } from "express";
 import { jwtVerify } from "jose";
 
 declare global {

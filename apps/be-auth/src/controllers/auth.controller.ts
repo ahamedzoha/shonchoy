@@ -1,6 +1,6 @@
 import {
   type ApiResponse,
-  AuthService,
+  type AuthService,
   type AuthTokens,
   type LoginInput as LoginDto,
   type RegisterInput as RegisterDto,

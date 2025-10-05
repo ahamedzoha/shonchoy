@@ -1,6 +1,6 @@
 import {
   type ApiResponse,
-  BackendContainer,
+  type BackendContainer,
   createLogger,
 } from "@workspace/backend-core";
 import compression from "compression";
@@ -14,7 +14,6 @@ import helmet from "helmet";
 
 import { AuthController } from "./controllers/auth.controller";
 import { UserController } from "./controllers/user.controller";
-import { createAuthMiddleware } from "./middleware/auth.middleware";
 import {
   errorLoggingMiddleware,
   requestLoggingMiddleware,

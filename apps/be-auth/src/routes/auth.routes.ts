@@ -1,7 +1,11 @@
-import { JwtConfig } from "@workspace/backend-core";
-import { Router } from "express";
+import type {
+  ApiResponse,
+  AuthTokens,
+  JwtConfig,
+} from "@workspace/backend-core";
+import { type Request, type Response, Router } from "express";
 
-import { AuthController } from "../controllers/auth.controller";
+import type { AuthController } from "../controllers/auth.controller";
 import { createAuthMiddleware } from "../middleware/auth.middleware.js";
 import {
   handleValidationErrors,
@@ -21,21 +25,28 @@ export const createAuthRoutes = (
     "/login",
     validateLogin,
     handleValidationErrors,
-    (req: any, res: any) => authController.login(req, res)
+    (req: Request, res: Response<ApiResponse<AuthTokens>>) =>
+      authController.login(req, res)
   );
   router.post(
     "/register",
     validateRegister,
     handleValidationErrors,
-    (req: any, res: any) => authController.register(req, res)
+    (req: Request, res: Response<ApiResponse<AuthTokens>>) =>
+      authController.register(req, res)
   );
-  router.post("/refresh", (req: any, res: any) =>
-    authController.refreshToken(req, res)
+  router.post(
+    "/refresh",
+    (req: Request, res: Response<ApiResponse<AuthTokens>>) =>
+      authController.refreshToken(req, res)
   );
 
   // Protected routes
-  router.post("/logout", authenticateToken, (req: any, res: any) =>
-    authController.logout(req, res)
+  router.post(
+    "/logout",
+    authenticateToken,
+    (req: Request, res: Response<ApiResponse<AuthTokens>>) =>
+      authController.logout(req, res)
   );
 
   return router;
