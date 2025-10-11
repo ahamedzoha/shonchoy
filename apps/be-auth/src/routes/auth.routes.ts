@@ -95,5 +95,13 @@ export const createAuthRoutes = (
     authController.logout(req, res)
   );
 
+  // Email verification routes
+  router.get("/verify-email", (req: Request, res: Response) =>
+    authController.verifyEmail(req, res)
+  );
+  router.post("/resend-verification", (req: Request, res: Response) =>
+    authController.resendVerificationEmail(req, res)
+  );
+
   return router;
 };

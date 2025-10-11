@@ -937,4 +937,685 @@ This consolidated architecture provides:
 - ✅ **Easier onboarding**: New developers only need to understand one shared package
 - ✅ **Simplified dependencies**: Fewer workspace package dependencies to manage
 
+## New NestJS Microservices Architecture
+
+### Overview
+
+Building on the consolidated backend architecture, we've introduced a new NestJS-based microservice architecture that provides:
+
+- **Modular Services**: Independent, domain-focused microservices using NestJS framework
+- **Shared Utilities**: Common NestJS decorators, guards, interceptors, and filters
+- **Type Safety**: Shared domain models with Zod validation schemas
+- **Scalable Design**: Ready for horizontal scaling and independent deployment
+
+### be-income Service (Income Management Microservice)
+
+The `be-income` service is the first NestJS microservice implementing complete CRUD operations for income tracking.
+
+#### Service Architecture
+
+```typescript
+// apps/be-income/src/income/income.module.ts
+@Module({
+  imports: [TypeOrmModule.forFeature([IncomeEntity])],
+  controllers: [IncomeController],
+  providers: [IncomeService],
+  exports: [IncomeService],
+})
+export class IncomeModule {}
+```
+
+#### Database Entity
+
+```typescript
+// apps/be-income/src/income/entities/income.entity.ts
+@Entity("incomes")
+export class IncomeEntity implements Income {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
+
+  @Column({ name: "user_id", type: "uuid" })
+  userId!: string;
+
+  @Column({ type: "decimal", precision: 10, scale: 2 })
+  amount!: number;
+
+  @Column({ type: "varchar", length: 255 })
+  source!: string;
+
+  @Column({
+    type: "enum",
+    enum: ["weekly", "monthly", "yearly", "one-time"],
+    default: "monthly",
+  })
+  frequency!: "weekly" | "monthly" | "yearly" | "one-time";
+
+  @Column({ type: "text", nullable: true })
+  description?: string;
+
+  @Column({ type: "timestamptz" })
+  date!: string;
+
+  @CreateDateColumn({ name: "created_at", type: "timestamptz" })
+  createdAt!: string;
+
+  @UpdateDateColumn({ name: "updated_at", type: "timestamptz" })
+  updatedAt!: string;
+}
+```
+
+#### REST API Endpoints
+
+The service provides a complete REST API for income management:
+
+| Method | Endpoint      | Description                   | Auth Required |
+| ------ | ------------- | ----------------------------- | ------------- |
+| POST   | `/income`     | Create new income entry       | ✅ JWT        |
+| GET    | `/income`     | List user incomes (paginated) | ✅ JWT        |
+| GET    | `/income/:id` | Get specific income entry     | ✅ JWT        |
+| PATCH  | `/income/:id` | Update income entry           | ✅ JWT        |
+| DELETE | `/income/:id` | Delete income entry           | ✅ JWT        |
+
+#### Controller Implementation
+
+```typescript
+// apps/be-income/src/income/income.controller.ts
+@Controller("income")
+@UseGuards(JwtAuthGuard)
+export class IncomeController {
+  constructor(private readonly incomeService: IncomeService) {}
+
+  @Post()
+  create(
+    @Body() createIncomeDto: CreateIncomeRequest,
+    @CurrentUser() user: User
+  ) {
+    return this.incomeService.create(createIncomeDto, user.id);
+  }
+
+  @Get()
+  findAll(
+    @CurrentUser() user: User,
+    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+  ) {
+    return this.incomeService.findAll(user.id, page, limit);
+  }
+
+  // ... additional CRUD methods
+}
+```
+
+#### Service Layer
+
+The service implements business logic with proper error handling and data mapping:
+
+```typescript
+// apps/be-income/src/income/income.service.ts
+@Injectable()
+export class IncomeService {
+  constructor(
+    @InjectRepository(IncomeEntity)
+    private readonly incomeRepository: Repository<IncomeEntity>
+  ) {}
+
+  async create(
+    createIncomeDto: CreateIncomeRequest,
+    userId: string
+  ): Promise<IncomeResponse> {
+    const income = this.incomeRepository.create({
+      ...createIncomeDto,
+      userId,
+      date: createIncomeDto.date || new Date().toISOString(),
+    });
+
+    const savedIncome = await this.incomeRepository.save(income);
+    return this.mapToResponse(savedIncome);
+  }
+
+  // ... additional CRUD methods with user isolation
+}
+```
+
+#### Authentication & Authorization
+
+- **JWT Authentication**: Uses `@workspace/nestjs-common` JwtAuthGuard
+- **User Isolation**: All operations are scoped to the authenticated user
+- **Input Validation**: Leverages shared Zod schemas for request validation
+- **Current User**: Uses `@CurrentUser()` decorator for user context
+
+### @workspace/nestjs-common Package (Shared NestJS Utilities)
+
+The `@workspace/nestjs-common` package provides reusable NestJS utilities that can be shared across all microservices, promoting consistency and reducing code duplication.
+
+#### Package Structure
+
+```
+packages/nestjs-common/src/
+├── decorators/
+│   ├── current-user.decorator.ts    # @CurrentUser() decorator
+│   ├── public.decorator.ts          # @Public() decorator for public routes
+│   └── index.ts                     # Export all decorators
+├── guards/
+│   ├── jwt-auth.guard.ts            # JWT authentication guard
+│   └── index.ts                     # Export guards
+├── interceptors/
+│   ├── logging.interceptor.ts       # Request logging interceptor
+│   ├── transform.interceptor.ts     # Response transformation interceptor
+│   └── index.ts                     # Export interceptors
+├── filters/
+│   ├── http-exception.filter.ts     # HTTP exception filter
+│   ├── all-exceptions.filter.ts     # Global exception filter
+│   └── index.ts                     # Export filters
+└── index.ts                         # Main package exports
+```
+
+#### Decorators
+
+##### @CurrentUser() Decorator
+
+Extracts the authenticated user from the request object:
+
+```typescript
+// packages/nestjs-common/src/decorators/current-user.decorator.ts
+import { ExecutionContext, createParamDecorator } from "@nestjs/common";
+
+export const CurrentUser = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest();
+    return request.user;
+  }
+);
+```
+
+**Usage:**
+
+```typescript
+@Controller("income")
+@UseGuards(JwtAuthGuard)
+export class IncomeController {
+  @Post()
+  create(
+    @Body() createIncomeDto: CreateIncomeRequest,
+    @CurrentUser() user: User // Automatically injects authenticated user
+  ) {
+    return this.incomeService.create(createIncomeDto, user.id);
+  }
+}
+```
+
+##### @Public() Decorator
+
+Marks routes as public (no authentication required):
+
+```typescript
+// packages/nestjs-common/src/decorators/public.decorator.ts
+import { SetMetadata } from "@nestjs/common";
+
+export const IS_PUBLIC_KEY = "isPublic";
+export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+```
+
+**Usage:**
+
+```typescript
+@Controller("auth")
+export class AuthController {
+  @Public() // This route doesn't require authentication
+  @Post("login")
+  async login(@Body() loginDto: LoginDto) {
+    // Login logic
+  }
+}
+```
+
+#### Guards
+
+##### JwtAuthGuard
+
+Extends Passport's AuthGuard to provide JWT authentication with public route support:
+
+```typescript
+// packages/nestjs-common/src/guards/jwt-auth.guard.ts
+@Injectable()
+export class JwtAuthGuard extends AuthGuard("jwt") {
+  constructor(private reflector: Reflector) {
+    super();
+  }
+
+  canActivate(context: ExecutionContext) {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      return true; // Skip authentication for public routes
+    }
+
+    return super.canActivate(context) as any;
+  }
+
+  handleRequest(err: any, user: any, info: any) {
+    if (err || !user) {
+      throw err || new UnauthorizedException("Invalid or expired token");
+    }
+    return user;
+  }
+}
+```
+
+#### Interceptors
+
+##### LoggingInterceptor
+
+Logs incoming requests and their completion:
+
+```typescript
+// packages/nestjs-common/src/interceptors/logging.interceptor.ts
+@Injectable()
+export class LoggingInterceptor implements NestInterceptor {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const request = context.switchToHttp().getRequest();
+    const startTime = Date.now();
+
+    console.log(`Incoming Request: ${request.method} ${request.url}`);
+
+    return next.handle().pipe(
+      tap(() => {
+        const duration = Date.now() - startTime;
+        console.log(
+          `Request Completed: ${request.method} ${request.url} - ${duration}ms`
+        );
+      })
+    );
+  }
+}
+```
+
+##### TransformInterceptor
+
+Standardizes API responses with consistent structure:
+
+```typescript
+// packages/nestjs-common/src/interceptors/transform.interceptor.ts
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  timestamp: string;
+  message?: string;
+}
+
+@Injectable()
+export class TransformInterceptor<T>
+  implements NestInterceptor<T, ApiResponse<T>>
+{
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler
+  ): Observable<ApiResponse<T>> {
+    return next.handle().pipe(
+      map((data: any) => ({
+        success: true,
+        data,
+        timestamp: new Date().toISOString(),
+      }))
+    );
+  }
+}
+```
+
+#### Exception Filters
+
+##### HttpExceptionFilter
+
+Handles HTTP exceptions with consistent error responses:
+
+```typescript
+// packages/nestjs-common/src/filters/http-exception.filter.ts
+@Injectable()
+export class HttpExceptionFilter implements ExceptionFilter {
+  catch(exception: HttpException, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    const status = exception.getStatus();
+
+    response.status(status).json({
+      success: false,
+      error: exception.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+```
+
+##### AllExceptionsFilter
+
+Catches all unhandled exceptions:
+
+```typescript
+// packages/nestjs-common/src/filters/all-exceptions.filter.ts
+@Injectable()
+export class AllExceptionsFilter implements ExceptionFilter {
+  catch(exception: unknown, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+
+    console.error("Unhandled exception:", exception);
+
+    response.status(500).json({
+      success: false,
+      error: "Internal server error",
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+```
+
+#### Usage in Services
+
+```typescript
+// apps/be-income/src/main.ts
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  // Global guards
+  app.useGlobalGuards(new JwtAuthGuard(app.get(Reflector)));
+
+  // Global interceptors
+  app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalInterceptors(new TransformInterceptor());
+
+  // Global filters
+  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new AllExceptionsFilter());
+
+  await app.listen(3001);
+}
+bootstrap();
+```
+
+### @workspace/shared-domain Package (Shared Domain Models)
+
+The `@workspace/shared-domain` package provides shared TypeScript types, interfaces, and Zod validation schemas that ensure type safety and data validation consistency across all services and the frontend.
+
+#### Package Structure
+
+```
+packages/shared-domain/src/
+├── entities/
+│   ├── user.entity.ts         # User domain model
+│   ├── income.entity.ts       # Income domain model
+│   ├── expense.entity.ts      # Expense domain model
+│   └── index.ts               # Export all entities
+├── dtos/
+│   ├── auth.dto.ts            # Authentication DTOs
+│   ├── income.dto.ts          # Income operation DTOs
+│   ├── expense.dto.ts         # Expense operation DTOs
+│   └── index.ts               # Export all DTOs
+├── validators/
+│   ├── auth.validator.ts      # Authentication validation schemas
+│   └── index.ts               # Export validators
+└── index.ts                   # Main package exports
+```
+
+#### Domain Entities
+
+##### User Entity
+
+```typescript
+// packages/shared-domain/src/entities/user.entity.ts
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isActive: boolean;
+  emailVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
+  oauthProvider?: string;
+  oauthId?: string;
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isActive: boolean;
+  emailVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+##### Income Entity
+
+```typescript
+// packages/shared-domain/src/entities/income.entity.ts
+export interface Income {
+  id: string;
+  userId: string;
+  amount: number;
+  source: string;
+  frequency: "weekly" | "monthly" | "yearly" | "one-time";
+  description?: string;
+  date: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IncomeCreate {
+  amount: number;
+  source: string;
+  frequency: "weekly" | "monthly" | "yearly" | "one-time";
+  description?: string;
+  date?: string;
+}
+
+export interface IncomeUpdate {
+  amount?: number;
+  source?: string;
+  frequency?: "weekly" | "monthly" | "yearly" | "one-time";
+  description?: string;
+  date?: string;
+}
+```
+
+##### Expense Entity
+
+```typescript
+// packages/shared-domain/src/entities/expense.entity.ts
+export interface Expense {
+  id: string;
+  userId: string;
+  amount: number;
+  category: string;
+  description?: string;
+  date: string;
+  tags?: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExpenseCreate {
+  amount: number;
+  category: string;
+  description?: string;
+  date?: string;
+  tags?: string[];
+}
+
+export interface ExpenseUpdate {
+  amount?: number;
+  category?: string;
+  description?: string;
+  date?: string;
+  tags?: string[];
+}
+```
+
+#### Data Transfer Objects (DTOs)
+
+##### Authentication DTOs
+
+```typescript
+// packages/shared-domain/src/dtos/auth.dto.ts
+import { z } from "zod";
+
+// Request DTOs
+export const LoginRequestSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+export const RegisterRequestSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+});
+
+// Response DTOs
+export const AuthTokensSchema = z.object({
+  accessToken: z.string(),
+  refreshToken: z.string(),
+  expiresIn: z.number(),
+});
+
+export const LoginResponseSchema = z.object({
+  success: z.boolean(),
+  data: AuthTokensSchema,
+  timestamp: z.string().datetime(),
+});
+
+// Type exports
+export type LoginRequest = z.infer<typeof LoginRequestSchema>;
+export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
+export type AuthTokens = z.infer<typeof AuthTokensSchema>;
+export type LoginResponse = z.infer<typeof LoginResponseSchema>;
+```
+
+##### Income DTOs
+
+```typescript
+// packages/shared-domain/src/dtos/income.dto.ts
+import { z } from "zod";
+
+// Validation schemas
+export const CreateIncomeRequestSchema = z.object({
+  amount: z.number().positive("Amount must be positive"),
+  source: z.string().min(1, "Source is required"),
+  frequency: z.enum(["weekly", "monthly", "yearly", "one-time"]),
+  description: z.string().optional(),
+  date: z.string().datetime().optional(),
+});
+
+export const UpdateIncomeRequestSchema = z.object({
+  amount: z.number().positive("Amount must be positive").optional(),
+  source: z.string().min(1, "Source is required").optional(),
+  frequency: z.enum(["weekly", "monthly", "yearly", "one-time"]).optional(),
+  description: z.string().optional(),
+  date: z.string().datetime().optional(),
+});
+
+// Response schemas
+export const IncomeResponseSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  amount: z.number(),
+  source: z.string(),
+  frequency: z.enum(["weekly", "monthly", "yearly", "one-time"]),
+  description: z.string().nullable(),
+  date: z.string().datetime(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+
+export const IncomeListResponseSchema = z.object({
+  incomes: z.array(IncomeResponseSchema),
+  total: z.number(),
+  page: z.number(),
+  limit: z.number(),
+  totalPages: z.number(),
+  hasNext: z.boolean(),
+  hasPrev: z.boolean(),
+});
+
+// Type exports
+export type CreateIncomeRequest = z.infer<typeof CreateIncomeRequestSchema>;
+export type UpdateIncomeRequest = z.infer<typeof UpdateIncomeRequestSchema>;
+export type IncomeResponse = z.infer<typeof IncomeResponseSchema>;
+export type IncomeListResponse = z.infer<typeof IncomeListResponseSchema>;
+```
+
+#### Validation Schemas
+
+##### Authentication Validators
+
+```typescript
+// packages/shared-domain/src/validators/auth.validator.ts
+import { z } from "zod";
+
+// Common validation patterns
+export const emailSchema = z.string().email("Invalid email format");
+
+export const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+  .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+  .regex(/[0-9]/, "Password must contain at least one number");
+
+export const nameSchema = z
+  .string()
+  .min(1, "Name is required")
+  .max(100, "Name must be less than 100 characters");
+
+export const jwtTokenSchema = z.string().min(1, "Token is required");
+
+// Pagination schema
+export const paginationSchema = z.object({
+  page: z.number().int().min(1).default(1),
+  limit: z.number().int().min(1).max(100).default(10),
+});
+
+// ID validation
+export const uuidSchema = z.string().uuid("Invalid UUID format");
+```
+
+#### Usage Across Services
+
+```typescript
+// In NestJS controllers
+import type {
+  CreateIncomeRequest,
+  IncomeResponse,
+  UpdateIncomeRequest,
+  User,
+} from "@workspace/shared-domain";
+
+@Controller("income")
+@UseGuards(JwtAuthGuard)
+export class IncomeController {
+  @Post()
+  create(
+    @Body() createIncomeDto: CreateIncomeRequest, // Type-safe DTO
+    @CurrentUser() user: User // Type-safe user
+  ): Promise<IncomeResponse> {
+    // Type-safe response
+    return this.incomeService.create(createIncomeDto, user.id);
+  }
+}
+```
+
+#### Benefits
+
+- **Type Safety**: Ensures consistent typing across backend services and frontend
+- **Validation**: Zod schemas provide runtime validation and TypeScript inference
+- **DRY Principle**: Single source of truth for domain models and DTOs
+- **API Contracts**: Clear interfaces for API communication
+- **Developer Experience**: IntelliSense and compile-time error checking
+
 The architecture follows domain-driven design principles and can easily accommodate future requirements like OAuth, multi-factor authentication, and microservice communication.

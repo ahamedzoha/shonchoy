@@ -1,6 +1,6 @@
 import { DataSource } from "typeorm";
 
-import { Session, User } from "./entities";
+import { EmailVerificationToken, Session, User } from "./entities";
 
 export interface DatabaseConfig {
   host: string;
@@ -27,7 +27,7 @@ export const createDataSource = (config: DatabaseConfig) => {
     ...config,
     synchronize: process.env.NODE_ENV === "development",
     // logging: process.env.NODE_ENV === "development",
-    entities: [User, Session],
+    entities: [User, Session, EmailVerificationToken],
     migrations: ["dist/migrations/*.js"],
     extra: {
       max: 20,

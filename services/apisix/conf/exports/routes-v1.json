@@ -1,81 +1,168 @@
 {
   "routes": [
     {
-      "id": "v1-auth-login",
-      "uri": "/v1/auth/login",
-      "methods": ["POST"],
-      "upstream_id": "be-auth-upstream",
+      "id": "auth-login",
+      "uri": "/auth/login",
+      "methods": ["POST", "OPTIONS"],
+      "upstream_id": "1",
       "plugins": {
-        "cors": {},
-        "rate-limit": {
-          "rate": 10,
-          "burst": 5,
-          "key_type": "var",
-          "key": "remote_addr"
+        "cors": {
+          "allow_origins": "http://localhost:3001,http://localhost:5173",
+          "allow_methods": "GET,POST,PUT,DELETE,OPTIONS",
+          "allow_headers": "Content-Type,Authorization,Accept,Origin,X-Requested-With",
+          "allow_credential": true,
+          "max_age": 86400
         }
       }
     },
     {
-      "id": "v1-auth-register",
-      "uri": "/v1/auth/register",
-      "methods": ["POST"],
-      "upstream_id": "be-auth-upstream",
+      "id": "auth-register",
+      "uri": "/auth/register",
+      "methods": ["POST", "OPTIONS"],
+      "upstream_id": "1",
       "plugins": {
-        "cors": {},
-        "rate-limit": {
-          "rate": 5,
-          "burst": 2,
-          "key_type": "var",
-          "key": "remote_addr"
+        "cors": {
+          "allow_origins": "http://localhost:3001,http://localhost:5173",
+          "allow_methods": "GET,POST,PUT,DELETE,OPTIONS",
+          "allow_headers": "Content-Type,Authorization,Accept,Origin,X-Requested-With",
+          "allow_credential": true,
+          "max_age": 86400
         }
       }
     },
     {
-      "id": "v1-auth-refresh",
-      "uri": "/v1/auth/refresh",
-      "methods": ["POST"],
-      "upstream_id": "be-auth-upstream",
+      "id": "auth-verify-email",
+      "uri": "/auth/verify-email",
+      "methods": ["GET", "OPTIONS"],
+      "upstream_id": "1",
       "plugins": {
-        "cors": {}
+        "cors": {
+          "allow_origins": "http://localhost:3001,http://localhost:5173",
+          "allow_methods": "GET,POST,PUT,DELETE,OPTIONS",
+          "allow_headers": "Content-Type,Authorization,Accept,Origin,X-Requested-With",
+          "allow_credential": true,
+          "max_age": 86400
+        }
       }
     },
     {
-      "id": "v1-auth-logout",
-      "uri": "/v1/auth/logout",
-      "methods": ["POST"],
-      "upstream_id": "be-auth-upstream",
+      "id": "auth-resend-verification",
+      "uri": "/auth/resend-verification",
+      "methods": ["POST", "OPTIONS"],
+      "upstream_id": "1",
       "plugins": {
-        "cors": {},
-        "key-auth": {}
+        "cors": {
+          "allow_origins": "http://localhost:3001,http://localhost:5173",
+          "allow_methods": "GET,POST,PUT,DELETE,OPTIONS",
+          "allow_headers": "Content-Type,Authorization,Accept,Origin,X-Requested-With",
+          "allow_credential": true,
+          "max_age": 86400
+        }
       }
     },
     {
-      "id": "v1-users-profile",
-      "uri": "/v1/users/profile",
-      "methods": ["GET", "PUT"],
-      "upstream_id": "be-auth-upstream",
+      "id": "auth-refresh",
+      "uri": "/auth/refresh",
+      "methods": ["POST", "OPTIONS"],
+      "upstream_id": "1",
       "plugins": {
-        "cors": {},
-        "key-auth": {}
+        "cors": {
+          "allow_origins": "http://localhost:3001,http://localhost:5173",
+          "allow_methods": "GET,POST,PUT,DELETE,OPTIONS",
+          "allow_headers": "Content-Type,Authorization,Accept,Origin,X-Requested-With",
+          "allow_credential": true,
+          "max_age": 86400
+        }
       }
     },
     {
-      "id": "v1-users-list",
-      "uri": "/v1/users",
-      "methods": ["GET"],
-      "upstream_id": "be-auth-upstream",
+      "id": "auth-logout",
+      "uri": "/auth/logout",
+      "methods": ["POST", "OPTIONS"],
+      "upstream_id": "1",
       "plugins": {
-        "cors": {},
-        "key-auth": {}
+        "cors": {
+          "allow_origins": "http://localhost:3001,http://localhost:5173",
+          "allow_methods": "GET,POST,PUT,DELETE,OPTIONS",
+          "allow_headers": "Content-Type,Authorization,Accept,Origin,X-Requested-With",
+          "allow_credential": true,
+          "max_age": 86400
+        }
       }
     },
     {
-      "id": "v1-health",
-      "uri": "/v1/health",
-      "methods": ["GET"],
-      "upstream_id": "be-auth-upstream",
+      "id": "auth-google",
+      "uri": "/auth/google",
+      "methods": ["GET", "OPTIONS"],
+      "upstream_id": "1",
       "plugins": {
-        "cors": {}
+        "cors": {
+          "allow_origins": "http://localhost:3001,http://localhost:5173",
+          "allow_methods": "GET,POST,PUT,DELETE,OPTIONS",
+          "allow_headers": "Content-Type,Authorization,Accept,Origin,X-Requested-With",
+          "allow_credential": true,
+          "max_age": 86400
+        }
+      }
+    },
+    {
+      "id": "auth-google-callback",
+      "uri": "/auth/google/callback",
+      "methods": ["GET", "OPTIONS"],
+      "upstream_id": "1",
+      "plugins": {
+        "cors": {
+          "allow_origins": "http://localhost:3001,http://localhost:5173",
+          "allow_methods": "GET,POST,PUT,DELETE,OPTIONS",
+          "allow_headers": "Content-Type,Authorization,Accept,Origin,X-Requested-With",
+          "allow_credential": true,
+          "max_age": 86400
+        }
+      }
+    },
+    {
+      "id": "users-profile",
+      "uri": "/users/profile",
+      "methods": ["GET", "PUT", "OPTIONS"],
+      "upstream_id": "1",
+      "plugins": {
+        "cors": {
+          "allow_origins": "http://localhost:3001,http://localhost:5173",
+          "allow_methods": "GET,POST,PUT,DELETE,OPTIONS",
+          "allow_headers": "Content-Type,Authorization,Accept,Origin,X-Requested-With",
+          "allow_credential": true,
+          "max_age": 86400
+        }
+      }
+    },
+    {
+      "id": "users-list",
+      "uri": "/users",
+      "methods": ["GET", "OPTIONS"],
+      "upstream_id": "1",
+      "plugins": {
+        "cors": {
+          "allow_origins": "http://localhost:3001,http://localhost:5173",
+          "allow_methods": "GET,POST,PUT,DELETE,OPTIONS",
+          "allow_headers": "Content-Type,Authorization,Accept,Origin,X-Requested-With",
+          "allow_credential": true,
+          "max_age": 86400
+        }
+      }
+    },
+    {
+      "id": "health",
+      "uri": "/health",
+      "methods": ["GET", "OPTIONS"],
+      "upstream_id": "1",
+      "plugins": {
+        "cors": {
+          "allow_origins": "http://localhost:3001,http://localhost:5173",
+          "allow_methods": "GET,POST,PUT,DELETE,OPTIONS",
+          "allow_headers": "Content-Type,Authorization,Accept,Origin,X-Requested-With",
+          "allow_credential": true,
+          "max_age": 86400
+        }
       }
     }
   ]

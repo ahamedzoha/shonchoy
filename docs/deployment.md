@@ -1,14 +1,21 @@
-# APISIX Deployment Guide
+# Shonchoy Deployment Guide
 
-This guide explains how to deploy APISIX with ETCD across different environments, from local development to production.
+This guide explains how to deploy the Shonchoy platform including APISIX gateway, multiple backend services, PostgreSQL databases, and frontend applications across different environments, from local development to production.
 
 ## How It Works Locally
 
 ### Current Setup
 
 - **ETCD**: Local Docker container using environment variables (no config file mounting issues)
-- **APISIX**: Connects to local ETCD via Docker network
+- **APISIX Gateway**: Connects to local ETCD via Docker network, routes requests to backend services
 - **APISIX Dashboard**: Web UI for managing APISIX configurations, connects to ETCD via Docker network
+- **PostgreSQL Services**: Multiple database instances for different microservices (auth on port 5432, income on port 5435)
+- **Backend Services**:
+  - `be-auth`: Express.js authentication service (port 4001)
+  - `be-income`: NestJS income management service (port 3001)
+- **Frontend Applications**:
+  - `react-app`: React SPA with Vite (port 3001, development)
+  - `web`: Next.js landing page (port 3000)
 - **Configuration**: All ETCD settings from `etcd.conf.yaml` are mapped to environment variables; Dashboard uses `dashboard.yaml`
 - **Cross-Platform**: Works identically on macOS, WSL2, and Linux
 
@@ -45,8 +52,19 @@ The Dashboard uses JWT (JSON Web Tokens) for authentication with the following d
 ### Local Development Commands
 
 ```bash
-# Start local development environment
+# Start all services (databases, gateway, etc.)
 docker-compose up -d
+
+# Start individual backend services
+pnpm dev:auth      # Start be-auth service (port 4001)
+pnpm dev:income    # Start be-income service (port 3001)
+
+# Start frontend applications
+pnpm dev:react     # Start React SPA (port 3001)
+pnpm dev:web       # Start Next.js app (port 3000)
+
+# Start everything at once
+pnpm dev           # Starts all services concurrently
 
 # Check status
 docker-compose ps
@@ -55,14 +73,32 @@ docker-compose ps
 curl -i "http://127.0.0.1:9180/apisix/admin/routes" \
   -H "X-API-KEY: edd1c9f034335f136f87ad84b625c8f1"
 
-# Access Dashboard
+# Test service endpoints through gateway
+curl -i "http://127.0.0.1:9080/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password"}'
+
+curl -i "http://127.0.0.1:9080/income" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Access APISIX Dashboard
 # Open http://127.0.0.1:9000 in browser
 # Default credentials: admin/admin or user/user
+
+# Access frontend applications
+# React App: http://localhost:3001
+# Next.js App: http://localhost:3000
 
 # View logs
 docker-compose logs apisix
 docker-compose logs etcd
 docker-compose logs apisix-dashboard
+docker-compose logs postgres-auth
+docker-compose logs postgres-income
+
+# Stop all services
+docker-compose down
+pnpm stop:all
 ```
 
 ## Environment Configuration
@@ -138,27 +174,73 @@ The same pattern applies to GitHub, Apple, and other OAuth providers. The applic
 
 ### Database Configuration
 
+#### Multi-Service Database Architecture
+
+The platform uses separate PostgreSQL databases for different microservices to ensure:
+
+- **Service Isolation**: Each service has its own database schema
+- **Independent Scaling**: Services can scale databases independently
+- **Data Security**: Sensitive data is isolated between services
+- **Migration Safety**: Schema changes don't affect other services
+
+#### Service-Specific Database Configuration
+
+##### Authentication Service Database (be-auth)
+
+```bash
+# Database for authentication and user management
+DB_AUTH_HOST=localhost
+DB_AUTH_PORT=5432
+DB_AUTH_NAME=shonchoy_auth
+DB_AUTH_USER=postgres
+DB_AUTH_PASSWORD=password
+```
+
+**Tables**: `users`, `sessions` (future)
+
+##### Income Service Database (be-income)
+
+```bash
+# Database for income tracking
+DB_INCOME_HOST=localhost
+DB_INCOME_PORT=5435
+DB_INCOME_NAME=shonchoy_income
+DB_INCOME_USER=postgres
+DB_INCOME_PASSWORD=password
+```
+
+**Tables**: `incomes`
+
 #### Production Database Setup
 
-1. **Use a managed database service:**
-   - AWS RDS PostgreSQL
-   - Google Cloud SQL
-   - Azure Database for PostgreSQL
-   - DigitalOcean Managed Databases
+1. **Use managed database services with multi-database support:**
+   - AWS RDS PostgreSQL (with multiple databases)
+   - Google Cloud SQL (multiple instances or schemas)
+   - Azure Database for PostgreSQL (with multiple databases)
+   - DigitalOcean Managed Databases (multiple clusters)
 
-2. **Configure connection pooling:**
+2. **Configure separate databases for each service:**
 
    ```bash
-   DB_HOST=your-production-db-host
-   DB_PORT=5432
-   DB_NAME=shonchoy_auth
-   DB_USER=your-db-username
-   DB_PASSWORD=your-secure-password
+   # Authentication Service
+   DB_AUTH_HOST=your-prod-db-host
+   DB_AUTH_PORT=5432
+   DB_AUTH_NAME=shonchoy_auth_prod
+   DB_AUTH_USER=auth_service_user
+   DB_AUTH_PASSWORD=secure-auth-password
+
+   # Income Service
+   DB_INCOME_HOST=your-prod-db-host
+   DB_INCOME_PORT=5432
+   DB_INCOME_NAME=shonchoy_income_prod
+   DB_INCOME_USER=income_service_user
+   DB_INCOME_PASSWORD=secure-income-password
    ```
 
-3. **Enable SSL/TLS:**
+3. **Enable SSL/TLS and security:**
    - Most managed services require/enable SSL by default
-   - Set `DB_SSL=true` if your provider supports it
+   - Use separate database users with minimal required permissions
+   - Implement database-level row security policies if supported
 
 ### Security Best Practices
 
@@ -333,15 +415,15 @@ data:
 
 ## Benefits of This Approach
 
-✅ **Cross-platform compatibility**: Works identically on macOS, Linux, WSL2
-✅ **No file permission issues**: Uses environment variables instead of volume mounts
-✅ **Production-ready**: Supports external ETCD services and authentication
-✅ **Security-first**: Configurable access controls and TLS support
-✅ **Scalable**: Easy to scale with managed services
-✅ **DevOps friendly**: Standard Docker Compose patterns
-✅ **Configuration preserved**: Original config files kept for reference
-✅ **Web-based management**: APISIX Dashboard provides intuitive UI for configuration
-✅ **User-friendly**: No need for API calls; manage routes, upstreams, and plugins via web interface
+- ✅ **Cross-platform compatibility**: Works identically on macOS, Linux, WSL2
+- ✅ **No file permission issues**: Uses environment variables instead of volume mounts
+- ✅ **Production-ready**: Supports external ETCD services and authentication
+- ✅ **Security-first**: Configurable access controls and TLS support
+- ✅ **Scalable**: Easy to scale with managed services
+- ✅ **DevOps friendly**: Standard Docker Compose patterns
+- ✅ **Configuration preserved**: Original config files kept for reference
+- ✅ **Web-based management**: APISIX Dashboard provides intuitive UI for configuration
+- ✅ **User-friendly**: No need for API calls; manage routes, upstreams, and plugins via web interface
 
 ## Troubleshooting
 
@@ -359,11 +441,31 @@ data:
 # Check ETCD health
 docker exec shonchoy-etcd-1 etcdctl --endpoints=http://localhost:2379 endpoint health
 
-# Check APISIX status
+# Check APISIX admin API
 curl -s http://127.0.0.1:9180/apisix/admin/routes -H "X-API-KEY: edd1c9f034335f136f87ad84b625c8f1"
 
-# Check Dashboard status
+# Check APISIX gateway (user-facing)
+curl -s http://127.0.0.1:9080/health
+
+# Check APISIX Dashboard
 curl -s http://127.0.0.1:9000  # Should return dashboard interface
+
+# Check backend services directly
+curl -s http://localhost:4001/health  # be-auth service
+curl -s http://localhost:3001/health  # be-income service
+
+# Check databases
+docker exec shonchoy-postgres-auth-1 pg_isready -h localhost -p 5432
+docker exec shonchoy-postgres-income-1 pg_isready -h localhost -p 5435
+
+# Check frontend applications (if running)
+curl -s http://localhost:3000  # Next.js app
+curl -s http://localhost:3001  # React app
+
+# View service logs
+docker-compose logs --tail=50 apisix
+docker-compose logs --tail=50 postgres-auth
+docker-compose logs --tail=50 postgres-income
 
 # View configuration mapping
 ./scripts/show-etcd-config.sh

@@ -4,6 +4,7 @@ import { SignJWT } from "jose";
 import { JwtConfig } from "../database/config";
 import { User } from "../database/entities";
 import {
+  IEmailVerificationRepository,
   ISessionRepository,
   IUserRepository,
 } from "../repositories/interfaces";
@@ -15,6 +16,7 @@ export class AuthService extends BaseService {
   constructor(
     private userRepository: IUserRepository,
     private sessionRepository: ISessionRepository,
+    private emailVerificationRepository: IEmailVerificationRepository,
     private jwtConfig: JwtConfig
   ) {
     super();
@@ -107,7 +109,9 @@ export class AuthService extends BaseService {
     return this.sessionRepository.findValidSession(refreshToken);
   }
 
-  async authenticateUser(credentials: LoginCredentials): Promise<User | null> {
+  async authenticateUser(
+    credentials: LoginCredentials
+  ): Promise<User | "unverified" | null> {
     const user = await this.findUserByEmail(credentials.email);
     if (!user) return null;
 
@@ -118,6 +122,91 @@ export class AuthService extends BaseService {
       credentials.password,
       user.password_hash
     );
-    return isValidPassword ? user : null;
+
+    if (!isValidPassword) return null;
+
+    // Check if email is verified - block login if not verified
+    if (!user.emailVerified) {
+      return "unverified";
+    }
+
+    return user;
+  }
+
+  async createEmailVerificationToken(userId: string): Promise<string> {
+    // Delete any existing token for this user
+    await this.emailVerificationRepository.deleteByUserId(userId);
+
+    // Generate new token
+    const token = crypto.randomUUID();
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24); // 24 hours
+
+    await this.emailVerificationRepository.create({
+      userId,
+      token,
+      expiresAt,
+    });
+
+    return token;
+  }
+
+  async verifyEmailToken(token: string): Promise<User | null> {
+    const verificationToken =
+      await this.emailVerificationRepository.findByToken(token);
+
+    if (!verificationToken) return null;
+
+    // Check if token is expired
+    if (new Date() > verificationToken.expiresAt) {
+      await this.emailVerificationRepository.deleteByToken(token);
+      return null;
+    }
+
+    // Update user as verified
+    const user = await this.userRepository.update(verificationToken.userId, {
+      emailVerified: true,
+    });
+
+    // Delete the token after successful verification
+    await this.emailVerificationRepository.deleteByToken(token);
+
+    return user;
+  }
+
+  async canResendVerificationEmail(userId: string): Promise<boolean> {
+    const existingToken =
+      await this.emailVerificationRepository.findByUserId(userId);
+
+    if (!existingToken || !existingToken.lastResendAt) return true;
+
+    // Check if 120 seconds have passed since last resend
+    const now = new Date();
+    const timeDiff = now.getTime() - existingToken.lastResendAt.getTime();
+    const secondsDiff = timeDiff / 1000;
+
+    return secondsDiff >= 120;
+  }
+
+  async updateResendTimestamp(userId: string): Promise<void> {
+    const existingToken =
+      await this.emailVerificationRepository.findByUserId(userId);
+
+    if (existingToken) {
+      await this.emailVerificationRepository.deleteByUserId(userId);
+    }
+
+    // Create new token with updated timestamp
+    const token = crypto.randomUUID();
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24);
+    const lastResendAt = new Date();
+
+    await this.emailVerificationRepository.create({
+      userId,
+      token,
+      expiresAt,
+      lastResendAt,
+    });
   }
 }

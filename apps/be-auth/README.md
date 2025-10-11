@@ -290,7 +290,7 @@ The application uses comprehensive environment variable validation that ensures 
 | -------------------- | ------------------------ | --------------------------------------------------------- |
 | `ENVIRONMENT`        | Deployment environment   | Must be "development", "production", or "test"            |
 | `DB_HOST`            | PostgreSQL host          | Required, non-empty string                                |
-| `DB_PORT`            | PostgreSQL port          | Integer 1-65535, default 5432                             |
+| `DB_PORT`            | PostgreSQL port          | Integer 1-65535, default 5435                             |
 | `DB_NAME`            | Database name            | Required, non-empty string                                |
 | `DB_USER`            | Database user            | Required, non-empty string                                |
 | `DB_PASSWORD`        | Database password        | Required, non-empty string                                |
@@ -299,17 +299,19 @@ The application uses comprehensive environment variable validation that ensures 
 
 ### Optional Variables
 
-| Variable                 | Description                  | Default                 | Notes                               |
-| ------------------------ | ---------------------------- | ----------------------- | ----------------------------------- |
-| `PORT`                   | Server port                  | `4001`                  | Integer 1-65535                     |
-| `BASE_URL`               | Base URL for the application | `http://localhost:4001` | Must be valid URL                   |
-| `JWT_ACCESS_EXPIRES_IN`  | Access token expiry          | `15m`                   | JWT duration string                 |
-| `JWT_REFRESH_EXPIRES_IN` | Refresh token expiry         | `7d`                    | JWT duration string                 |
-| `NODE_ENV`               | Node environment             | `development`           | "development", "production", "test" |
+| Variable                 | Description          | Default                 | Notes                               |
+| ------------------------ | -------------------- | ----------------------- | ----------------------------------- |
+| `PORT`                   | Internal server port | `4001`                  | Port where service runs internally  |
+| `BASE_URL`               | External base URL    | `http://localhost:4001` | Public URL for OAuth callbacks      |
+| `JWT_ACCESS_EXPIRES_IN`  | Access token expiry  | `15m`                   | JWT duration string                 |
+| `JWT_REFRESH_EXPIRES_IN` | Refresh token expiry | `7d`                    | JWT duration string                 |
+| `NODE_ENV`               | Node environment     | `development`           | "development", "production", "test" |
 
 ### OAuth Configuration (Optional)
 
 Google OAuth is automatically enabled when valid credentials are provided:
+
+**Note:** When using an API gateway (like APISIX), set `BASE_URL` to the external gateway URL (e.g., `http://localhost:9080`) for OAuth callbacks, while the service runs internally on `PORT` (e.g., `4001`).
 
 | Variable               | Description                | Requirements                   |
 | ---------------------- | -------------------------- | ------------------------------ |

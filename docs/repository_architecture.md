@@ -20,10 +20,13 @@ graph TD
     A --> C[Packages]
 
     B --> D[be-auth<br/>✅ Express.js Auth Service<br/>✅ Passport.js OAuth]
-    B --> E[react-app<br/>Vite + React SPA]
+    B --> Y[be-finance<br/>✅ NestJS Finance Service<br/>✅ Income, Expenses, Assets, Budgets]
+    B --> E[react-app<br/>🚧 React SPA<br/>Redux + RTK Query]
     B --> F[web<br/>Next.js App]
 
     C --> H[backend-core<br/>✅ Consolidated Auth & DB Layer]
+    C --> Z[nestjs-common<br/>✅ NestJS Utilities<br/>Guards, Interceptors]
+    C --> AA[shared-domain<br/>✅ Domain Models<br/>Zod Schemas, DTOs]
     C --> I[common-dtos<br/>✅ Shared DTOs]
     C --> J[database-entities<br/>✅ DB Schemas]
     C --> K[ui<br/>Shared UI Components]
@@ -33,7 +36,11 @@ graph TD
     D --> H
     D --> I
     D --> J
+    Y --> Z
+    Y --> AA
+    Y --> J
     E --> K
+    E --> AA
     F --> K
     G --> R[Apache APISIX<br/>✅ API Gateway]
     G --> S[PostgreSQL<br/>✅ Database Service]
@@ -44,7 +51,12 @@ graph TD
 
     F --> Q[Next.js Framework]
     E --> T[Vite Build Tool]
+    E --> BB[Redux Toolkit<br/>State Management]
+    E --> CC[Zustand<br/>UI State]
+    E --> DD[React Router<br/>Client Routing]
     D --> U[PostgreSQL Client]
+    Y --> U
+    Y --> EE[NestJS Framework]
 
     A --> V[Turbo<br/>Build Orchestration]
     A --> W[pnpm<br/>Package Management]
@@ -109,14 +121,18 @@ OAuth providers are conditionally enabled based on environment variables:
 
 ### React Applications (Focus Areas)
 
-#### react-app (Vite + React SPA)
+#### react-app (Vite + React SPA) 🚧 **IN PROGRESS**
 
 - **Framework**: React 19 with Vite for fast development and building
+- **State Management**: Redux Toolkit for server state, Zustand for UI state
+- **Routing**: React Router v6 with protected routes and navigation guards
+- **API Integration**: RTK Query for type-safe API calls and caching
 - **Styling**: Tailwind CSS v4 for utility-first CSS
 - **UI Components**: Consumes the shared `@workspace/ui` package
-- **Features**: Demonstrates shadcn/ui components including NavigationMenu, Button, Input, and Toaster
+- **Authentication**: JWT-based auth with token refresh and protected routes
+- **Features**: Income management, dashboard, authentication forms, responsive design
 - **Port**: Runs on port 3001 in development
-- **Purpose**: Showcase and test UI components in a client-side rendered React application
+- **Purpose**: Main client application for Shonchoy personal finance platform
 
 #### web (Next.js Application)
 
@@ -141,6 +157,17 @@ OAuth providers are conditionally enabled based on environment variables:
 - **Port**: Runs on port 4001 in development
 - **Status**: ✅ Fully functional with APISIX integration and OAuth support
 
+#### be-income (NestJS Income Service) ✅ **NEW**
+
+- **Framework**: NestJS with TypeScript and modular architecture
+- **Features**: Complete CRUD operations for income tracking with user isolation
+- **Database**: PostgreSQL with TypeORM entities and relationships
+- **Authentication**: JWT-based with shared guards and decorators from @workspace/nestjs-common
+- **API**: RESTful endpoints with pagination, validation, and error handling
+- **Validation**: Zod schemas from @workspace/shared-domain for type safety
+- **Port**: Runs on port 3001 in development
+- **Status**: ✅ Fully implemented and integrated with APISIX gateway
+
 ### Services Overview
 
 #### Apache APISIX (API Gateway) ✅
@@ -164,19 +191,33 @@ OAuth providers are conditionally enabled based on environment variables:
 
 ### Authentication Packages ✅
 
-#### @workspace/auth-types - Shared Authentication Types
+#### @workspace/backend-core - Consolidated Backend Package
 
-- **Purpose**: Type-safe interfaces for authentication across services
-- **Contents**: User interfaces, auth DTOs, token interfaces, session entities
-- **Usage**: Imported by be-auth service for consistent typing
+- **Purpose**: Consolidated authentication and database layer for Express.js services
+- **Contents**: Auth service, user repository, session management, TypeORM config
+- **Usage**: Used by be-auth service for complete authentication functionality
 - **Status**: ✅ Active and used in production
 
-#### @workspace/common-dtos - Shared Data Transfer Objects
+#### @workspace/nestjs-common - NestJS Shared Utilities ✅ **NEW**
+
+- **Purpose**: Reusable NestJS utilities for consistent service development
+- **Contents**: Guards, interceptors, decorators, filters, exception handlers
+- **Usage**: Imported by all NestJS microservices for standardized functionality
+- **Status**: ✅ Fully implemented and documented
+
+#### @workspace/shared-domain - Domain Models & DTOs ✅ **NEW**
+
+- **Purpose**: Type-safe domain models with validation schemas
+- **Contents**: Zod schemas, TypeScript interfaces, DTOs for all domains
+- **Usage**: Shared across backend services and frontend for type safety
+- **Status**: ✅ Implemented with comprehensive type definitions
+
+#### @workspace/common-dtos - Legacy DTOs
 
 - **Purpose**: Common response types and validation schemas
 - **Contents**: Response DTOs, pagination types, email/password validation
-- **Usage**: Standardizes API responses across all services
-- **Status**: ✅ Active and used in production
+- **Usage**: Standardizes API responses across services
+- **Status**: ✅ Active but being phased out in favor of shared-domain
 
 #### @workspace/database-entities - Database Schemas
 

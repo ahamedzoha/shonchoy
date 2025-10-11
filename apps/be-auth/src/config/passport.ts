@@ -28,13 +28,24 @@ export const configurePassport = (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       async (email: string, password: string, done: any) => {
         try {
-          const user = await authService.authenticateUser({ email, password });
+          const result = await authService.authenticateUser({
+            email,
+            password,
+          });
 
-          if (!user) {
+          if (!result) {
             return done(null, false, { message: "Invalid credentials" });
           }
 
-          return done(null, user);
+          if (result === "unverified") {
+            return done(null, false, {
+              message:
+                "Email not verified. Please check your email and verify your account.",
+              code: "EMAIL_NOT_VERIFIED",
+            });
+          }
+
+          return done(null, result);
         } catch (error) {
           return done(error);
         }

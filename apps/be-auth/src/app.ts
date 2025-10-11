@@ -6,6 +6,7 @@ import {
 import compression from "compression";
 import cors from "cors";
 import express, {
+  type Application,
   type NextFunction,
   type Request,
   type Response,
@@ -25,7 +26,7 @@ import { createAuthRoutes, createUserRoutes } from "./routes/index";
 const logger = createLogger("auth-service");
 
 export const createApp = (container: BackendContainer) => {
-  const app: express.Application = express();
+  const app: Application = express();
 
   // Logger Middleware
   app.use(requestLoggingMiddleware);
@@ -50,7 +51,10 @@ export const createApp = (container: BackendContainer) => {
   });
 
   // Create controllers with services from container
-  const authController = new AuthController(container.authService);
+  const authController = new AuthController(
+    container.authService,
+    container.emailService
+  );
   const userController = new UserController(container.userService);
 
   // Create routes with controllers and JWT config

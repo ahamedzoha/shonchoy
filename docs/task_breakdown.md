@@ -86,13 +86,28 @@ Focus: Build core services, starting with auth and data handling.
     - APISIX gateway integration with JWT validation
     - Centralized environment configuration
 
-- **Task 2.2: CRUD for Core Entities**
-  - Description: Implement CRUD for Incomes, Expenses, Assets, Liabilities (extend for loan/credit details like interest_rate).
+- **Task 2.1.1: Migrate be-income to consolidated be-finance service** ✅ **COMPLETED**
+  - Description: Consolidate be-income into be-finance service with modular architecture for all financial domains (Income, Expenses, Assets, Liabilities, Budgets).
   - Dependencies: Task 2.1.
   - Assignee: Backend Dev.
   - Priority: High.
+  - Estimation: 1 day → **Actual: 1 day**
+  - Acceptance Criteria: ✅ Service renamed and restructured; ✅ Placeholder modules created; ✅ Database configuration updated; ✅ Documentation completed; ✅ All builds passing.
+  - **Implementation Details:**
+    - Renamed be-income to be-finance
+    - Created modular structure with placeholder modules (expenses, assets, liabilities, budget)
+    - Updated database from shonchoy_income to shonchoy_finance
+    - Consolidated postgres-income and postgres-expense into single postgres-finance service
+    - Created comprehensive README and migration guide
+    - Updated all environment variables and turbo configuration
+
+- **Task 2.2: CRUD for Core Entities**
+  - Description: Implement CRUD for Expenses, Assets, Liabilities modules in be-finance service (Income already complete).
+  - Dependencies: Task 2.1.1.
+  - Assignee: Backend Dev.
+  - Priority: High.
   - Estimation: 3 days.
-  - Acceptance Criteria: APIs return correct data; validation for inputs (e.g., decimal amounts).
+  - Acceptance Criteria: APIs return correct data; validation for inputs (e.g., decimal amounts); all modules follow income module pattern.
 
 - **Task 2.3: Budgeting & Surplus Logic**
   - Description: Build surplus calculation service; envelope assignment; integrate with cron for alerts.
@@ -320,21 +335,24 @@ Focus: Enhancements from PRD/Tech Spec Section 9.
 
 - **Planning & Setup:** Monorepo, Docker environment, database schema ✅
 - **Backend Development:** Complete JWT auth service with PostgreSQL ✅
-- **Integration:** APISIX gateway configuration and testing ✅
+- **Microservices Architecture:** NestJS income service with shared utilities ✅
+- **Shared Packages:** @workspace/nestjs-common and @workspace/shared-domain ✅
+- **Integration:** APISIX gateway configuration and multi-service routing ✅
+- **Frontend Foundation:** React SPA with Redux, React Router, and authentication ✅
 - **Testing:** API endpoint testing and health checks ✅
 
 **🚧 In Progress:**
 
-- **Frontend Development:** React dashboard implementation (Next priority)
-- **Core Features:** Income/expense tracking, budget calculations
+- **Frontend Development:** Complete income CRUD UI and dashboard analytics
+- **Core Features:** Full income management interface and data visualization
 
 **📋 Remaining Tasks:**
 
-- Complete React SPA with shadcn/ui components
-- Add financial tracking endpoints
-- Implement budget surplus calculations
-- Add loan/credit calculators
-- Data visualization with Chart.js
+- Complete React SPA dashboard with financial summaries
+- Implement expense service (NestJS microservice)
+- Add budget surplus calculations and projections
+- Data visualization with Chart.js integration
+- Form validation and error handling improvements
 
 ### Updated Project Timeline
 
@@ -343,17 +361,21 @@ gantt
     title Shonchoy Development Status - October 2025
     dateFormat  YYYY-MM-DD
     section ✅ Completed
-    Monorepo Setup      :done, 2025-09-25, 1d
-    Docker Environment  :done, 2025-09-26, 2d
-    Auth Service        :done, 2025-09-28, 5d
-    APISIX Integration  :done, 2025-10-01, 2d
+    Monorepo Setup           :done, 2025-09-25, 1d
+    Docker Environment       :done, 2025-09-26, 2d
+    Auth Service             :done, 2025-09-28, 5d
+    APISIX Integration       :done, 2025-10-01, 2d
+    NestJS Income Service    :done, 2025-10-03, 4d
+    Shared Packages          :done, 2025-10-07, 3d
+    React Auth & Routing     :done, 2025-10-10, 3d
     section 🚧 In Progress
-    React Dashboard     :active, 2025-10-02, 7d
-    Financial Tracking  :2025-10-09, 5d
+    Income CRUD UI          :active, 2025-10-13, 5d
+    Dashboard Analytics     :2025-10-18, 4d
     section 📋 Planned
-    Budget Calculations :2025-10-14, 3d
-    Loan Calculators    :2025-10-17, 4d
-    Data Visualization  :2025-10-21, 3d
-    Testing & QA        :2025-10-24, 5d
-    Deployment          :2025-10-29, 3d
+    Expense Service         :2025-10-22, 5d
+    Budget Calculations     :2025-10-27, 4d
+    Data Visualization      :2025-10-31, 5d
+    Loan Calculators        :2025-11-05, 4d
+    Testing & QA            :2025-11-09, 7d
+    Production Deployment   :2025-11-16, 5d
 ```

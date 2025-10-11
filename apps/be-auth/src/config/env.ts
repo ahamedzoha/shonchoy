@@ -33,10 +33,11 @@ const baseEnvSchema = z.object({
     .enum(["development", "production", "test"])
     .default("development"),
   BASE_URL: z.string().url().default("http://localhost:4001"),
+  FRONTEND_URL: z.string().url().default("http://localhost:5173"),
 
   // Database (required for all environments)
   DB_HOST: z.string().min(1, "DB_HOST is required"),
-  DB_PORT: z.coerce.number().int().min(1).max(65535).default(5432),
+  DB_PORT: z.coerce.number().int().min(1).max(65535).default(5435),
   DB_NAME: z.string().min(1, "DB_NAME is required"),
   DB_USER: z.string().min(1, "DB_USER is required"),
   DB_PASSWORD: z.string().min(1, "DB_PASSWORD is required"),
@@ -50,6 +51,13 @@ const baseEnvSchema = z.object({
     .min(32, "JWT_REFRESH_SECRET must be at least 32 characters long"),
   JWT_ACCESS_EXPIRES_IN: z.string().default("15m"),
   JWT_REFRESH_EXPIRES_IN: z.string().default("7d"),
+
+  // Email Configuration
+  SMTP_HOST: z.string().min(1, "SMTP_HOST is required"),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
+  SMTP_USER: z.string().min(1, "SMTP_USER is required"),
+  SMTP_PASS: z.string().min(1, "SMTP_PASS is required"),
+  SMTP_FROM: z.string().email("SMTP_FROM must be valid email"),
 });
 
 // Development-specific validations

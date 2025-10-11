@@ -47,6 +47,18 @@ const container = new BackendContainer({
     secret: validatedEnv.env.JWT_REFRESH_SECRET,
     expiresIn: validatedEnv.env.JWT_REFRESH_EXPIRES_IN,
   },
+
+  // Email config
+  emailConfig: {
+    host: validatedEnv.env.SMTP_HOST,
+    port: validatedEnv.env.SMTP_PORT,
+    secure: validatedEnv.env.SMTP_PORT === 465, // SSL for port 465, TLS for port 587
+    auth: {
+      user: validatedEnv.env.SMTP_USER,
+      pass: validatedEnv.env.SMTP_PASS,
+    },
+    from: validatedEnv.env.SMTP_FROM,
+  },
 });
 
 // Initialize database connection
@@ -67,15 +79,27 @@ container
       });
 
       console.log(
-        `🚀 Shonchoy Auth Server running on ${validatedEnv.env.BASE_URL}`
+        `🚀 Shonchoy Auth Server running on http://localhost:${validatedEnv.env.PORT}`
       );
-      console.log(`📊 Health check: ${validatedEnv.env.BASE_URL}/health`);
-      console.log(`🔐 Auth endpoints: ${validatedEnv.env.BASE_URL}/auth/*`);
-      console.log(`👤 User endpoints: ${validatedEnv.env.BASE_URL}/users/*`);
+      console.log(
+        `📊 Health check: http://localhost:${validatedEnv.env.PORT}/health`
+      );
+      console.log(
+        `🔐 Auth endpoints: http://localhost:${validatedEnv.env.PORT}/auth/*`
+      );
+      console.log(
+        `👤 User endpoints: http://localhost:${validatedEnv.env.PORT}/users/*`
+      );
+      console.log(
+        `🌐 External API URL (via APISIX): ${validatedEnv.env.BASE_URL}`
+      );
 
       if (validatedEnv.isOAuthEnabled) {
         console.log(
           `🔑 OAuth enabled: ${validatedEnv.env.BASE_URL}/auth/google`
+        );
+        console.log(
+          `🔄 OAuth callback: ${validatedEnv.env.BASE_URL}/auth/google/callback`
         );
       } else {
         console.log(
