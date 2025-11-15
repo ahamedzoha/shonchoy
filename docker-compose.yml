@@ -1,0 +1,88 @@
+services:
+  # ETCD for APISIX configuration
+  etcd:
+    image: bitnami/etcd:3.5.9
+    restart: always
+    environment:
+      - ETCD_ENABLE_V2=true
+      - ALLOW_NONE_AUTHENTICATION=yes
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+    ports:
+      - "2379:2379"
+    networks:
+      - apisix
+
+  # PostgreSQL for Auth Service
+  postgres-auth:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      - POSTGRES_DB=${DB_NAME:-shonchoy_auth}
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+      - ./services/postgres/init-database.sql:/docker-entrypoint-initdb.d/init-database.sql:ro
+    networks:
+      - apisix
+
+  # PostgreSQL for Finance Service
+  postgres-finance:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      - POSTGRES_DB=shonchoy_finance
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_finance_data:/var/lib/postgresql/data
+    networks:
+      - apisix
+
+  # APISIX Gateway
+  apisix:
+    image: apache/apisix:${APISIX_IMAGE_TAG:-3.13.0-debian}
+    restart: always
+    volumes:
+      - ./services/apisix/conf/config.yaml:/usr/local/apisix/conf/config.yaml:ro
+    environment:
+      - ETCD_HOST=${ETCD_HOST:-etcd:2379}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+    ports:
+      - "9180:9180/tcp"
+      - "9080:9080/tcp"
+      - "9091:9091/tcp"
+      - "9443:9443/tcp"
+      - "9092:9092/tcp"
+    networks:
+      - apisix
+    depends_on:
+      - etcd
+
+  # APISIX Dashboard
+  apisix-dashboard:
+    image: apache/apisix-dashboard:3.0.0-centos
+    restart: always
+    ports:
+      - "9000:9000/tcp"
+    networks:
+      - apisix
+    volumes:
+      - ./services/apisix/conf/dashboard.yaml:/usr/local/apisix-dashboard/conf/conf.yaml:ro
+    environment:
+      - ETCD_HOST=${ETCD_HOST:-etcd:2379}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+    depends_on:
+      - etcd
+
+volumes:
+  postgres_auth_data:
+  postgres_finance_data:
+
+networks:
+  apisix:
+    driver: bridge

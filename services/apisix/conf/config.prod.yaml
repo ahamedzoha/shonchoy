@@ -1,0 +1,40 @@
+# Production APISIX configuration
+apisix:
+  node_listen: 9080
+  enable_ipv6: false
+
+  enable_control: true
+  control:
+    ip: "0.0.0.0"
+    port: 9092
+
+deployment:
+  admin:
+    allow_admin:
+      - 127.0.0.1/32 # Restrict admin access in production
+      - 10.0.0.0/8 # Internal network only
+      - 172.16.0.0/12
+      - 192.168.0.0/16
+
+    admin_key:
+      - name: "admin"
+        key: ${APISIX_ADMIN_KEY:-edd1c9f034335f136f87ad84b625c8f1}
+        role: admin
+
+      - name: "viewer"
+        key: ${APISIX_VIEWER_KEY:-4054f7cf07e344346cd3f287985e76a2}
+        role: viewer
+
+  etcd:
+    host:
+      - "${ETCD_HOST:-etcd:2379}"
+    prefix: "/apisix"
+    timeout: 30
+    # Production ETCD with authentication
+    user: "${ETCD_USERNAME:-}"
+    password: "${ETCD_PASSWORD:-}"
+    tls:
+      cert: "${ETCD_CERT_FILE:-}"
+      key: "${ETCD_KEY_FILE:-}"
+      ca: "${ETCD_CA_FILE:-}"
+      verify: true

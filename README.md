@@ -1,6 +1,6 @@
 # 💰 Shonchoy
 
-> **Shonchoy** (Bengali: সঞ্চয় meaning "savings") - A modern, scalable personal finance tracking platform built with cutting-edge web technologies.
+> **Shonchoy** (Bengali: সঞ্চয় meaning "savings") - A modern, scalable personal finance tracking platform built with cutting-edge web technologies. Features complete JWT authentication, PostgreSQL database, and Apache APISIX API gateway integration.
 
 <div align="center">
 
@@ -9,9 +9,10 @@
 ![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
 ![Express.js](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Apache APISIX](https://img.shields.io/badge/Apache_APISIX-1F77B4?style=for-the-badge&logo=apache&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
-**Status:** 🚧 In Development | **Version:** MVP Phase
+**Status:** 🚧 In Development | **Version:** MVP Phase | **Auth Service:** ✅ Working
 
 </div>
 
@@ -41,23 +42,21 @@ Shonchoy is built as a modern monorepo utilizing a client-server architecture wi
 graph LR
     A[Next.js Landing Page] --> B[User Signup/Login]
     B --> C[React App Main UI]
-    C --> D[API Gateway Express]
-    D --> E[Auth Service]
-    D --> F[Tracking Service]
-    D --> G[Portfolio Service]
-    D --> H[Reporting Service]
-    D --> I[Debt Service]
-    E --> J[PostgreSQL DB]
-    F --> J
-    G --> J
-    H --> J
-    I --> J
-    subgraph MS [Future Microservices]
+    C --> D[Apache APISIX Gateway]
+    D --> E[be-auth Service]
+    D --> F[Future Services]
+    E --> G[PostgreSQL DB]
+    F --> G
+    D -.-> H[ETCD Config Store]
+
+    subgraph "✅ Working Now"
+        D
         E
-        F
         G
         H
-        I
+    end
+    subgraph "🚧 Future Microservices"
+        F
     end
 ```
 
@@ -82,17 +81,19 @@ graph LR
 
 ### Backend
 
-- **Express.js** with TypeScript and API gateway pattern
-- **PostgreSQL** with TypeORM for robust data persistence
-- **JWT Authentication** with OAuth support (Google, Apple)
-- **Node-cron** for automated alerts and recurring tasks
+- **Express.js** with TypeScript and modular architecture
+- **PostgreSQL** with connection pooling for robust data persistence
+- **JWT Authentication** with bcryptjs password hashing and refresh tokens
+- **Apache APISIX** API gateway with load balancing and health checks
+- **ETCD** for configuration storage and service discovery
 
 ### DevOps & Tooling
 
-- **pnpm** for efficient package management
+- **Docker & Docker Compose** for containerized development environment
+- **pnpm** for efficient package management with workspace support
 - **Turbo** for intelligent build caching and parallelization
 - **ESLint & Prettier** for code quality consistency
-- **Jest & Cypress** for comprehensive testing coverage
+- **Jest & Supertest** for unit and integration testing
 - **GitHub Actions** for CI/CD pipeline automation
 
 ---
@@ -122,20 +123,29 @@ graph LR
 ```
 shonchoy/
 ├── apps/
-│   ├── api/                    # Express.js API server
+│   ├── be-auth/                # ✅ Express.js auth microservice
 │   ├── react-app/              # Main Vite+React SPA
 │   ├── web/                    # Next.js landing page
-│   └── landing/                # Future marketing site
+│   └── gateway/                # Future API gateway service
 ├── packages/
+│   ├── auth-types/             # ✅ Shared auth interfaces & DTOs
+│   ├── common-dtos/            # ✅ Shared response types
+│   ├── database-entities/      # ✅ Shared database schemas
 │   ├── ui/                     # Shared shadcn/ui components
 │   ├── eslint-config/          # Shared linting rules
 │   └── typescript-config/      # Shared TS configurations
+├── services/
+│   ├── apisix/                 # ✅ Apache APISIX API gateway
+│   └── postgres/               # PostgreSQL service configs
 ├── docs/                       # Project documentation
+│   ├── deployment.md           # APISIX deployment guide
 │   ├── pitchdeck.md
 │   ├── project_requirement_document.md
 │   ├── repository_architecture.md
+│   ├── roadmap.md
 │   ├── strategic_review.md
-│   └── task_breakdown.md
+│   ├── task_breakdown.md
+│   └── upstream-configuration-guide.md
 ├── scripts/                    # Build and utility scripts
 ├── .github/                    # GitHub Actions workflows
 ├── turbo.json                  # Turbo build configuration
@@ -145,9 +155,11 @@ shonchoy/
 
 ### Key Directories
 
+- **`apps/be-auth/`**: ✅ **Working** Express.js authentication microservice with JWT, PostgreSQL, and user management
 - **`apps/react-app/`**: Primary user interface built with React 19 and Vite
 - **`apps/web/`**: Marketing and landing pages using Next.js for SEO optimization
-- **`apps/api/`**: RESTful API server with Express.js and PostgreSQL integration
+- **`services/apisix/`**: ✅ **Working** Apache APISIX API gateway with load balancing and health checks
+- **`packages/auth-types/`**: ✅ **Working** Shared TypeScript interfaces for authentication
 - **`packages/ui/`**: Shared component library based on shadcn/ui and Radix primitives
 
 ---
@@ -158,10 +170,9 @@ shonchoy/
 
 - **Node.js** (v20 or higher)
 - **pnpm** (v9 or higher)
-- **PostgreSQL** (v14 or higher)
-- **Docker** (optional, for database)
+- **Docker & Docker Compose** (for full development environment)
 
-### Installation
+### Quick Start with Docker (Recommended)
 
 1. **Clone the repository**
 
@@ -170,43 +181,61 @@ shonchoy/
    cd shonchoy
    ```
 
-2. **Install dependencies**
+2. **Start the complete development environment**
+
+   ```bash
+   # Start PostgreSQL, APISIX, ETCD, and all services
+   docker-compose up -d
+
+   # Verify services are running
+   docker-compose ps
+   ```
+
+3. **Install dependencies**
 
    ```bash
    pnpm install
    ```
 
-3. **Set up environment variables**
+4. **Set up environment variables**
 
    ```bash
-   cp apps/api/.env.example apps/api/.env
-   # Edit .env with your database credentials and JWT secret
+   cp .env.example .env
+   # The .env file is pre-configured for Docker development
    ```
 
-4. **Start PostgreSQL**
+5. **Configure APISIX (WSL2/Linux/Mac)**
 
    ```bash
-   # Using Docker (recommended)
-   docker run --name shonchoy-postgres -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres:14
-
-   # Or use your local PostgreSQL installation
+   # Auto-configure APISIX for your environment
+   ./scripts/setup-wsl2-apisix.sh
    ```
 
-5. **Run database migrations**
+6. **Start the auth service**
 
    ```bash
-   cd apps/api
-   pnpm db:migrate
-   ```
-
-6. **Start development servers**
-
-   ```bash
-   # From root directory - starts all apps
+   cd apps/be-auth
    pnpm dev
+   ```
 
-   # Or start individual apps
-   pnpm dev:api     # API server on :3002
+### Manual Setup (Alternative)
+
+If you prefer not to use Docker:
+
+1. **Install PostgreSQL 16+ locally**
+2. **Create database:**
+
+   ```sql
+   CREATE DATABASE shonchoy_auth;
+   CREATE USER shonchoy WITH PASSWORD 'your_password';
+   GRANT ALL PRIVILEGES ON DATABASE shonchoy_auth TO shonchoy;
+   ```
+
+3. **Configure environment variables manually**
+4. **Start services individually:**
+
+   ```bash
+   pnpm dev:auth    # be-auth service on :4001
    pnpm dev:react   # React app on :3001
    pnpm dev:web     # Next.js on :3000
    ```
@@ -275,41 +304,70 @@ pnpm test
 
 ## 🔌 API Documentation
 
-### Authentication Endpoints
+### ✅ Working Endpoints (be-auth Service)
+
+All endpoints are accessible through APISIX gateway at `http://localhost:9080`
+
+#### Authentication Endpoints
 
 ```typescript
-POST /api/auth/register    # User registration
-POST /api/auth/login       # User login (returns JWT)
-GET  /api/auth/profile     # Get user profile (protected)
+POST /auth/register        # ✅ User registration with password validation
+POST /auth/login           # ✅ User login (returns access + refresh tokens)
+POST /auth/refresh         # ✅ Refresh access token using refresh token
+POST /auth/logout          # ✅ Revoke refresh token (logout)
 ```
 
-### Core Resource Endpoints
+#### User Management Endpoints
 
 ```typescript
-# Income Management
-GET    /api/incomes        # List user incomes
-POST   /api/incomes        # Create new income stream
-PUT    /api/incomes/:id    # Update income
-DELETE /api/incomes/:id    # Remove income
+GET    /users/profile      # ✅ Get authenticated user profile
+PUT    /users/profile      # ✅ Update user profile (firstName, lastName)
+GET    /users              # ✅ List users (admin endpoint with pagination)
+GET    /users?page=1&limit=10  # ✅ Paginated user listing
+```
 
-# Expense Tracking
-GET    /api/expenses       # List expenses with filtering
-POST   /api/expenses       # Record new expense
-PUT    /api/expenses/:id   # Update expense
-DELETE /api/expenses/:id   # Remove expense
+#### Health Check
 
-# Debt Management
-POST   /api/debt/calculate # Calculate EMI and schedules
-POST   /api/debt/simulate  # Run payoff simulations
-GET    /api/debt/schedule  # Get amortization schedule
+```typescript
+GET    /health             # ✅ Service health check with uptime
+```
 
-# Portfolio & Projections
-POST   /api/portfolios/simulate    # Investment projections
-GET    /api/portfolios/alerts      # Portfolio rebalancing alerts
+### 🚧 Planned Endpoints (Future Services)
 
-# Reporting
-GET    /api/reports/dashboard      # Dashboard data (JSON)
-GET    /api/reports/export         # Export data (CSV/PDF)
+```typescript
+# Income Management (Future)
+GET    /incomes            # List user incomes
+POST   /incomes            # Create new income stream
+
+# Expense Tracking (Future)
+GET    /expenses           # List expenses with filtering
+POST   /expenses           # Record new expense
+
+# Debt Management (Future)
+POST   /debt/calculate     # Calculate EMI and schedules
+POST   /debt/simulate      # Run payoff simulations
+
+# Portfolio & Projections (Future)
+POST   /portfolios/simulate # Investment projections
+GET    /portfolios/alerts  # Portfolio rebalancing alerts
+```
+
+### Authentication Flow
+
+```bash
+# 1. Register user
+curl -X POST http://localhost:9080/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"password123","firstName":"John","lastName":"Doe"}'
+
+# 2. Login to get tokens
+curl -X POST http://localhost:9080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"password123"}'
+
+# 3. Use access token for protected endpoints
+curl -H "Authorization: Bearer <ACCESS_TOKEN>" \
+  http://localhost:9080/users/profile
 ```
 
 ---
@@ -338,37 +396,59 @@ GET    /api/reports/export         # Export data (CSV/PDF)
 
 ## 🛣 Roadmap
 
-### Phase 1: MVP (Current)
+### ✅ Phase 1: Foundation (Completed)
 
-- ✅ Monorepo setup with pnpm/Turbo
-- 🚧 Core authentication system
-- 🚧 Basic income/expense tracking
-- 🚧 Simple budget calculations
-- 🚧 Loan/credit calculators
-- 🚧 React dashboard with charts
+- ✅ Monorepo setup with pnpm/Turbo workspaces
+- ✅ Docker Compose development environment
+- ✅ PostgreSQL database with connection pooling
+- ✅ Apache APISIX API gateway with load balancing
+- ✅ JWT authentication with refresh tokens
+- ✅ User registration and login system
+- ✅ Protected API endpoints with middleware
+- ✅ Shared TypeScript packages (auth-types, common-dtos)
+- ✅ WSL2-compatible APISIX configuration
 
-### Phase 2: Enhanced Features
+### 🚧 Phase 2: Core Features (In Progress)
 
-- 🔄 Joint account functionality
-- 🔄 Advanced simulations and projections
-- 🔄 Portfolio management tools
-- 🔄 Export and reporting features
-- 🔄 PWA offline support
+- 🚧 React dashboard with shadcn/ui components
+- 🚧 Income and expense tracking
+- 🚧 Budget calculations and surplus analysis
+- 🚧 Loan/credit card calculators
+- 🚧 Basic portfolio management
+- 🚧 Data visualization with Chart.js
 
-### Phase 3: Scale & Polish
+### 📋 Phase 3: Enhanced Features (Planned)
+
+- 📋 Joint account functionality
+- 📋 Advanced financial simulations
+- 📋 CSV import/export features
+- 📋 PWA offline support
+- 📋 Email notifications and alerts
+- 📋 Advanced reporting and analytics
+
+### 🔮 Phase 4: Scale & Intelligence (Future)
 
 - 📋 Microservices migration (NestJS)
-- 📋 AI-powered recommendations
+- 📋 AI-powered financial recommendations
 - 📋 Mobile app (React Native)
-- 📋 Advanced analytics dashboard
 - 📋 Multi-language support
-
-### Phase 4: Enterprise
-
-- 📋 Bank integrations (where available)
-- 📋 Team/business accounts
 - 📋 Advanced security features
-- 📋 Custom reporting tools
+- 📋 Bank integrations (where available)
+
+### 🎯 Current Status
+
+**Working Components:**
+
+- ✅ **be-auth service**: Complete authentication microservice
+- ✅ **APISIX Gateway**: Load balancing and routing
+- ✅ **PostgreSQL**: Database with user and session management
+- ✅ **Shared Packages**: Type-safe interfaces across services
+
+**Next Priority:**
+
+- 🔄 Complete React dashboard implementation
+- 🔄 Add income/expense tracking endpoints
+- 🔄 Implement budget calculation logic
 
 ---
 

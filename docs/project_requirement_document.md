@@ -163,48 +163,346 @@ graph TD
 
 ---
 
+# Current Implementation Status (October 2025)
+
+## Backend Architecture ✅ **COMPLETED**
+
+### Authentication Service (be-auth)
+
+- **Framework**: Express.js with TypeScript and Passport.js integration
+- **Features**: Complete JWT authentication with refresh tokens, user management
+- **Security**: bcryptjs password hashing, secure token handling, CORS protection
+- **Database**: PostgreSQL with TypeORM, connection pooling
+- **Status**: ✅ Fully functional with APISIX gateway integration
+
+### Finance Management Service (be-finance) ✅ **UPDATED**
+
+- **Framework**: NestJS with TypeScript, modular architecture
+- **Features**: Consolidated finance tracking service handling income, expenses, assets, liabilities, and budgets
+- **Modules**:
+  - Income Module: ✅ Complete CRUD operations with pagination
+  - Expenses Module: 🚧 Placeholder structure ready for implementation
+  - Assets Module: 🚧 Placeholder structure ready for implementation
+  - Liabilities Module: 🚧 Placeholder structure ready for implementation
+  - Budget Module: 🚧 Placeholder structure ready for implementation
+- **API**: RESTful endpoints with pagination, validation, and error handling
+- **Database**: PostgreSQL (shonchoy_finance) with TypeORM entities
+- **Authentication**: JWT-based with shared guards and decorators
+- **Status**: ✅ Migrated from be-income, modular structure established, income module fully functional
+
+### Shared Packages ✅ **NEW**
+
+#### @workspace/nestjs-common
+
+- **Purpose**: Shared NestJS utilities for consistent service development
+- **Components**: Guards, interceptors, decorators, filters, exception handlers
+- **Benefits**: Reduces code duplication, ensures consistency across services
+- **Status**: ✅ Implemented and documented
+
+#### @workspace/shared-domain
+
+- **Purpose**: Type-safe domain models and validation schemas
+- **Components**: Zod schemas, TypeScript interfaces, DTOs for auth/income/expense
+- **Benefits**: Type safety across backend services and frontend, runtime validation
+- **Status**: ✅ Implemented with comprehensive type definitions
+
+## Frontend Architecture 🚧 **IN PROGRESS**
+
+### React Application (react-app)
+
+- **Framework**: React 19 with Vite, TypeScript, and modern tooling
+- **State Management**: Redux Toolkit for server state, Zustand for UI state
+- **Routing**: React Router v6 with protected routes and navigation guards
+- **UI Library**: shadcn/ui with Tailwind CSS v4, Radix UI primitives
+- **API Integration**: RTK Query for type-safe API calls and caching
+- **Authentication**: Login/Register forms with JWT token management
+- **Status**: 🚧 Core authentication flow implemented, dashboard in development
+
+### Key Frontend Components ✅ **IMPLEMENTED**
+
+#### Authentication System
+
+- **LoginForm**: Email/password authentication with error handling
+- **RegisterForm**: User registration with validation
+- **ProtectedRoute**: Route guards for authenticated pages
+- **Token Management**: Automatic token refresh and storage
+
+#### Layout Components
+
+- **AppLayout**: Main application layout with sidebar navigation
+- **PublicLayout**: Layout for public pages (login/register)
+- **Navigation**: Responsive sidebar with route-based active states
+
+#### Dashboard Components
+
+- **DashboardPage**: Main dashboard with financial overview cards
+- **IncomePage**: Income management with CRUD operations
+- **UI Store**: Zustand-based state management for UI preferences
+
+#### State Management Architecture
+
+```typescript
+// Redux Store with RTK Query
+const store = configureStore({
+  reducer: {
+    auth: authReducer,
+    [apiSlice.reducerPath]: apiSlice.reducer,
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(apiSlice.middleware),
+});
+
+// UI State with Zustand
+interface UIState {
+  sidebarOpen: boolean;
+  theme: "light" | "dark";
+  modalOpen: boolean;
+}
+
+const useUIStore = create<UIState & UIActions>((set) => ({
+  // State and actions
+}));
+```
+
+### API Integration Layer
+
+#### RTK Query Setup
+
+```typescript
+// Auth API with type-safe endpoints
+export const authApi = apiSlice.injectEndpoints({
+  endpoints: (builder) => ({
+    login: builder.mutation<LoginResponse, LoginRequest>({
+      query: (credentials) => ({
+        url: "/auth/login",
+        method: "POST",
+        body: credentials,
+      }),
+      invalidatesTags: ["Auth"],
+    }),
+    // Additional endpoints...
+  }),
+});
+```
+
+#### Frontend-Backend Integration
+
+- **Type Sharing**: Uses `@workspace/shared-domain` for consistent types
+- **API Gateway**: All requests routed through APISIX gateway
+- **Error Handling**: Comprehensive error states and user feedback
+- **Loading States**: Skeleton loaders and loading indicators
+
+## Database Schema ✅ **COMPLETED**
+
+### Current Tables
+
+- **Users**: User accounts with authentication data
+- **Incomes**: User income entries with frequency tracking
+- **Sessions**: JWT refresh token storage (planned)
+- **Expenses**: User expense tracking (planned)
+- **Assets/Liabilities**: Financial asset management (planned)
+
+### Database Configuration
+
+- **Port**: Changed from 5432 to 5435 for service isolation
+- **Multiple Services**: Separate PostgreSQL containers for different services
+- **Connection Pooling**: Configured for optimal performance
+- **Migrations**: SQL scripts for schema management
+
+## Infrastructure ✅ **COMPLETED**
+
+### Docker Services
+
+- **APISIX Gateway**: Load balancing and API routing
+- **PostgreSQL**: Multi-instance database services
+- **ETCD**: Configuration store for APISIX
+- **Development**: Hot reload and debugging support
+
+### Environment Configuration
+
+- **Centralized**: Single `.env` file at repository root
+- **Turbo Integration**: Environment variables globally available
+- **Service Isolation**: Separate database instances per service
+- **Security**: Encrypted secrets and secure defaults
+
+## Development Workflow ✅ **ESTABLISHED**
+
+### Build Tools
+
+- **pnpm**: Fast package management with workspace support
+- **Turbo**: Intelligent build caching and parallel execution
+- **TypeScript**: Strict type checking across all packages
+- **ESLint/Prettier**: Code quality and formatting consistency
+
+### Development Commands
+
+```bash
+# Start all services
+pnpm dev
+
+# Start specific services
+pnpm dev:auth      # Authentication service
+pnpm dev:income    # Income service
+pnpm dev:react     # React application
+
+# Build all packages
+pnpm build
+
+# Run tests
+pnpm test
+```
+
+## API Architecture ✅ **COMPLETED**
+
+### Gateway Pattern
+
+- **APISIX**: Centralized API gateway for all services
+- **Load Balancing**: Request distribution across service instances
+- **Authentication**: JWT validation at gateway level
+- **Rate Limiting**: Configurable request limits per endpoint
+
+### Service Endpoints
+
+```
+Authentication Service (be-auth):
+├── POST /auth/login
+├── POST /auth/register
+├── POST /auth/logout
+├── GET  /users/profile
+└── PUT  /users/profile
+
+Finance Service (be-finance):
+├── Income Module (✅ Implemented)
+│   ├── POST   /income
+│   ├── GET    /income
+│   ├── GET    /income/:id
+│   ├── PATCH  /income/:id
+│   └── DELETE /income/:id
+├── Expenses Module (🚧 Placeholder)
+│   ├── POST   /expenses
+│   ├── GET    /expenses
+│   ├── GET    /expenses/:id
+│   ├── PATCH  /expenses/:id
+│   └── DELETE /expenses/:id
+├── Assets Module (🚧 Placeholder)
+│   └── CRUD endpoints to be implemented
+├── Liabilities Module (🚧 Placeholder)
+│   └── CRUD endpoints to be implemented
+└── Budget Module (🚧 Placeholder)
+    └── Aggregation endpoints to be implemented
+```
+
+## Security Implementation ✅ **COMPLETED**
+
+### Authentication & Authorization
+
+- **JWT Tokens**: Access and refresh token architecture
+- **Password Security**: bcryptjs hashing with salt rounds
+- **Route Protection**: Guard-based authentication checks
+- **User Isolation**: All data operations scoped to authenticated user
+
+### API Security
+
+- **CORS**: Configured cross-origin policies
+- **Helmet**: Security headers for HTTP responses
+- **Input Validation**: Zod schemas for request validation
+- **Error Handling**: Secure error responses without data leakage
+
+## Next Development Priorities 📋 **PLANNED**
+
+### Immediate Tasks (Week 1-2)
+
+1. **Complete Income CRUD UI**: Full income management interface
+2. **Expense Service**: NestJS service for expense tracking
+3. **Dashboard Analytics**: Charts and financial summaries
+4. **Form Validation**: Client-side validation with error states
+
+### Short-term Goals (Month 1)
+
+1. **Budget Calculations**: Surplus/deficit calculations and tracking
+2. **Data Visualization**: Charts.js integration for financial insights
+3. **User Profile Management**: Profile editing and preferences
+4. **API Error Handling**: Comprehensive error boundaries and retries
+
+### Medium-term Goals (Month 2-3)
+
+1. **Expense Management**: Complete expense CRUD operations
+2. **Asset/Liability Tracking**: Financial portfolio management
+3. **Report Generation**: PDF/CSV export functionality
+4. **Mobile Responsiveness**: PWA optimization and touch interactions
+
+### Future Enhancements (Month 3+)
+
+1. **Joint Accounts**: Multi-user financial sharing
+2. **Loan Calculators**: EMI and payoff simulations
+3. **Investment Tracking**: Portfolio performance monitoring
+4. **AI Recommendations**: Smart financial insights and suggestions
+
+## Technical Debt & Improvements 🔧 **PLANNED**
+
+### Code Quality
+
+- **Unit Tests**: Comprehensive test coverage for all services
+- **Integration Tests**: API endpoint testing with Supertest
+- **E2E Tests**: User flow automation with Playwright
+- **Documentation**: API documentation with Swagger/OpenAPI
+
+### Performance Optimizations
+
+- **Database Indexing**: Query optimization for large datasets
+- **Caching Layer**: Redis for frequently accessed data
+- **API Response Compression**: Gzip compression for responses
+- **Image Optimization**: Efficient asset loading and delivery
+
+### Monitoring & Observability
+
+- **Logging**: Structured logging with Winston
+- **Metrics**: Application performance monitoring
+- **Health Checks**: Service health and dependency monitoring
+- **Error Tracking**: Sentry integration for error reporting
+
+This implementation provides a solid foundation for the Shonchoy personal finance platform, with modern architecture patterns, comprehensive type safety, and scalable microservice design.
+
 # Technical Specification for Shonchoy Web App
 
 ## 1. Architecture Overview
 
-- **High-Level Design:** Monorepo with client-server architecture using REST APIs. Main application in React 19 (Vite), landing page in Next.js, Backend in Express.js with API gateway pattern (all requests route through a central gateway for auth, logging, and routing to services). DB in PostgreSQL. Future: Migrate to microservices with NestJS for modular separation (e.g., auth service, tracking service).
-- **Deployment:** Monorepo setup with pnpm and Turbo for build orchestration; cloud hosting (e.g., Vercel for FE, Render/AWS for BE/DB).
-- **Data Flow:** UI → Gateway API (handles auth/rate limiting) → Internal Services → DB; optional real-time for joint updates via WebSockets (e.g., Socket.io).
-- **Scalability:** Built for expansion to microservices; use containerization (Docker) for future orchestration (Kubernetes if needed).
-- **Security:** Standard protections (JWT for auth, CORS, input validation).
+- **High-Level Design:** ✅ **Implemented** - Monorepo with client-server architecture using REST APIs. be-auth microservice in Express.js with TypeScript, Apache APISIX API gateway for routing, PostgreSQL database. Shared TypeScript packages for type safety across services.
+- **Deployment:** ✅ **Implemented** - Docker Compose for local development with PostgreSQL, APISIX, and ETCD. Monorepo with pnpm workspaces and Turbo build orchestration.
+- **Data Flow:** ✅ **Implemented** - UI → APISIX Gateway (load balancing, health checks) → be-auth Service (JWT auth, business logic) → PostgreSQL DB.
+- **Scalability:** ✅ **Ready** - Containerized architecture ready for Kubernetes orchestration. Modular service design enables easy addition of new microservices.
+- **Security:** ✅ **Implemented** - JWT authentication with refresh tokens, bcryptjs password hashing, input validation, CORS protection, and Helmet security headers.
 
 ### 1.1 Architecture Diagram (Mermaid)
 
 ```mermaid
 graph LR
     A[Next.js Landing Page] --> B[User Signup/Login]
-    B --> C[React App (Main UI)]
-    C --> D[API Gateway (Express)]
-    D --> E[Auth Service]
-    D --> F[Tracking Service (Income/Expenses)]
-    D --> G[Portfolio Service]
-    D --> H[Reporting Service]
-    D --> I[Debt Service (Loan/Credit)]
-    E --> J[PostgreSQL DB]
-    F --> J
-    G --> J
-    H --> J
-    I --> J
-    subgraph Future Microservices
+    B --> C[React App Main UI]
+    C --> D[Apache APISIX Gateway]
+    D --> E[be-auth Service ✅]
+    D --> F[Future Services]
+    E --> G[PostgreSQL DB ✅]
+    F --> G
+
+    subgraph "✅ Working Now"
+        D
         E
-        F
         G
-        H
-        I
+    end
+
+    subgraph "🚧 Future Microservices"
+        F
     end
 ```
 
 ## 2. Technology Stack
 
 - **Frontend:** React 19 (TypeScript) with Vite for main app (react-app), Next.js for landing page (web), shadcn/ui with Tailwind CSS v4, Chart.js, React Query.
-- **Backend:** Express.js (TypeScript) with gateway pattern, JWT (via jsonwebtoken/passport).
-- **Database:** PostgreSQL (with pg library or TypeORM for ORM).
-- **Other:** Testing (Jest/Cypress), CI/CD (GitHub Actions), pnpm, Turbo; monitoring (Sentry for errors); math libs (e.g., mathjs for client/server calculations).
+- **Backend:** ✅ **Implemented** - Express.js (TypeScript) with modular architecture, Apache APISIX API gateway, JWT authentication with jose library, bcryptjs password hashing.
+- **Database:** ✅ **Implemented** - PostgreSQL 16 with connection pooling, custom SQL scripts for schema management.
+- **Services:** ✅ **Implemented** - Apache APISIX with ETCD configuration store, load balancing, and health checks.
+- **Other:** Testing (Jest/Supertest), CI/CD (GitHub Actions), pnpm workspaces, Turbo build orchestration; Docker Compose for development environment.
 
 ## 3. Database Schema
 
@@ -225,18 +523,27 @@ graph LR
 
 ## 4. API Endpoints
 
-- **Auth:** POST /auth/register, POST /auth/login (returns JWT), GET /auth/profile (protected).
-- **Incomes/Expenses/Assets/Liabilities:** CRUD via /api/{resource} (e.g., POST /api/incomes, GET /api/expenses?userId=xx).
-- **Budgets:** GET /api/budgets/surplus (calc), POST /api/budgets/envelope.
-- **Portfolios:** POST /api/portfolios/simulate (projections), GET /api/portfolios/alerts.
-- **Debt (Loan/Credit):** POST /api/debt/calculate (EMI/interest for loans), POST /api/debt/simulate (what-if payoffs), GET /api/debt/schedule (amortization).
-- **Reports:** GET /api/reports/dashboard (JSON for charts), GET /api/reports/export?format=csv.
-- **Joint:** POST /api/joint/invite, GET /api/joint/merged.
-- All routes prefixed through gateway (/api/gateway) for future modularity.
+### ✅ Implemented Endpoints (be-auth Service)
+
+All endpoints accessible through APISIX gateway at `http://localhost:9080`
+
+- **Auth:** POST `/auth/register`, POST `/auth/login` (returns JWT), POST `/auth/refresh`, POST `/auth/logout`.
+- **Users:** GET `/users/profile` (protected), PUT `/users/profile` (protected), GET `/users` (admin with pagination).
+- **Health:** GET `/health` (service health check).
+
+### 🚧 Planned Endpoints (Future Services)
+
+- **Incomes/Expenses/Assets/Liabilities:** CRUD via `/api/{resource}` (e.g., POST `/api/incomes`, GET `/api/expenses?userId=xx`).
+- **Budgets:** GET `/api/budgets/surplus` (calc), POST `/api/budgets/envelope`.
+- **Portfolios:** POST `/api/portfolios/simulate` (projections), GET `/api/portfolios/alerts`.
+- **Debt (Loan/Credit):** POST `/api/debt/calculate` (EMI/interest for loans), POST `/api/debt/simulate` (what-if payoffs), GET `/api/debt/schedule` (amortization).
+- **Reports:** GET `/api/reports/dashboard` (JSON for charts), GET `/api/reports/export?format=csv` (export reports).
+- **Joint:** POST `/api/joint/invite`, GET `/api/joint/merged`.
+- All future routes will be prefixed through APISIX gateway for modularity.
 
 ## 5. Frontend Structure
 
-- Components: Layout (Nav/Sidebar), Dashboard (Charts/Simulations), Forms (Entry/Custom), Pages (Income, Portfolio, DebtCalculator).
+- Components: Layout (Nav/Sidebar), Dashboard (Charts/Simulations), Forms (Entry/Custom), Pages (Income, Portfolio, DebtCalculator, etc.).
 - State: Context/Reducer for global (e.g., user), React Query for API caching/mutations.
 - Routing: React Router for app; Next.js pages for landing (e.g., /pricing, /blog).
 - Visuals: Responsive charts; integrate Mermaid.js client-side for user-generated diagrams if needed; sliders/inputs for simulation parameters.
@@ -244,9 +551,9 @@ graph LR
 ## 6. Calculations and Logic
 
 - **Surplus:** Sum(incomes) - Sum(expenses) (server-side for accuracy, with caching).
-- **Projections:** Future Value = PV _ (1 + r)^n + PMT _ (((1 + r)^n - 1) / r); implement in a dedicated service.
+- **Projections:** `Future Value = PV _ (1 + r)^n + PMT _ (((1 + r)^n - 1) / r)`; implement in a dedicated service (e.g., be-auth service).
 - **Simulations:** What-if logic: Clone current data, apply changes (e.g., expense -= Y%), recompute surplus/projections.
-- **Loan EMI:** EMI = P _ (r _ (1 + r)^n) / ((1 + r)^n - 1); where P=principal, r=monthly rate, n=term months.
+- **Loan EMI:** `EMI = P _ (r _ (1 + r)^n) / ((1 + r)^n - 1)`; where P=principal, r=monthly rate, n=term months.
 - **Credit Card Payoff:** Balance iteration: New balance = old + interest - payment; simulate until zero.
 - **Alerts:** Cron jobs (node-cron) for scheduled checks/emails.
 

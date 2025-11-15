@@ -1,5 +1,50 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "NODE_ENV",
+    "ENVIRONMENT",
+    "PORT",
+    "APISIX_ADMIN_URL",
+    "APISIX_ADMIN_KEY",
+    "APISIX_VIEWER_KEY",
+    "ETCD_HOST",
+    "ETCD_USERNAME",
+    "ETCD_PASSWORD",
+    "ETCD_CERT_FILE",
+    "ETCD_KEY_FILE",
+    "ETCD_CA_FILE",
+    "DASHBOARD_SECRET",
+    "DASHBOARD_JWT_EXPIRE",
+    "DASHBOARD_ADMIN_USER",
+    "DASHBOARD_ADMIN_PASSWORD",
+    "DB_HOST",
+    "DB_PORT",
+    "DB_PORT_FINANCE",
+    "DB_NAME",
+    "DB_USER",
+    "DB_PASSWORD",
+    "PORT_FINANCE",
+    "JWT_ACCESS_SECRET",
+    "JWT_REFRESH_SECRET",
+    "JWT_ACCESS_EXPIRES_IN",
+    "JWT_REFRESH_EXPIRES_IN",
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_USER",
+    "SMTP_PASS",
+    "SMTP_FROM",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "GITHUB_CLIENT_ID",
+    "GITHUB_CLIENT_SECRET",
+    "APPLE_CLIENT_ID",
+    "APPLE_TEAM_ID",
+    "APPLE_KEY_ID",
+    "APPLE_PRIVATE_KEY_PATH",
+    "BASE_URL",
+    "FRONTEND_URL",
+    "WEB_URL"
+  ],
   "ui": "tui",
   "tasks": {
     "build": {
@@ -8,7 +53,12 @@
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": ["^lint"],
+      "outputs": []
+    },
+    "lint:fix": {
+      "dependsOn": ["^lint:fix"],
+      "outputs": []
     },
     "check-types": {
       "dependsOn": ["^check-types"]
@@ -16,6 +66,22 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "apisix:up": {
+      "cache": false,
+      "outputs": []
+    },
+    "apisix:down": {
+      "cache": false,
+      "outputs": []
+    },
+    "pg:up": {
+      "cache": false,
+      "outputs": []
+    },
+    "pg:down": {
+      "cache": false,
+      "outputs": []
     }
   }
 }

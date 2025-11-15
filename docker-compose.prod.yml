@@ -1,0 +1,12 @@
+# Production configuration - no local ETCD
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+
+services:
+  apisix:
+    environment:
+      - ETCD_HOST=${ETCD_HOST} # Must be provided via environment
+      - ENVIRONMENT=production
+    # Remove depends_on since we're using external ETCD
+    depends_on: []
+# No etcd service in production - use external service
+# No volumes needed for etcd data

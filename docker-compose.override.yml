@@ -1,0 +1,54 @@
+# Local development overrides
+# This file is automatically loaded by docker-compose
+# and provides local development specific configurations
+
+services:
+  etcd:
+    # Pure environment variable approach - matches your etcd.conf.yaml
+    image: bitnami/etcd:3.5.11
+    restart: always
+    volumes:
+      - etcd_data:/bitnami/etcd/data
+      # Config file mounted for reference/documentation (not actively used)
+      - ./services/apisix/conf/etcd/etcd.conf.yaml:/opt/bitnami/etcd/conf/etcd.conf.yaml:ro
+    environment:
+      # Core settings from your etcd.conf.yaml
+      ETCD_NAME: "default"
+      ETCD_ENABLE_V2: "true"
+      ALLOW_NONE_AUTHENTICATION: "yes"
+
+      # Network settings (from your config file)
+      ETCD_ADVERTISE_CLIENT_URLS: "http://etcd:2379"
+      ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: "http://etcd:2380"
+      ETCD_LISTEN_PEER_URLS: "http://0.0.0.0:2380"
+
+      # Cluster settings (from your config file)
+      ETCD_INITIAL_CLUSTER: "default=http://etcd:2380"
+      ETCD_INITIAL_CLUSTER_STATE: "new"
+      ETCD_INITIAL_CLUSTER_TOKEN: "etcd-cluster"
+
+      # Performance settings (from your config file)
+      ETCD_SNAPSHOT_COUNT: "10000"
+      ETCD_HEARTBEAT_INTERVAL: "100"
+      ETCD_ELECTION_TIMEOUT: "1000"
+      ETCD_MAX_SNAPSHOTS: "5"
+      ETCD_MAX_WALS: "5"
+
+      # Logging (from your config file)
+      ETCD_LOGGER: "zap"
+      ETCD_LOG_OUTPUTS: "stderr"
+      ETCD_DEBUG: "false"
+
+      # Auto-compaction (from your config file)
+      ETCD_AUTO_COMPACTION_MODE: "periodic"
+      ETCD_AUTO_COMPACTION_RETENTION: "1"
+    ports:
+      - "2379:2379/tcp"
+      - "2380:2380/tcp"
+    networks:
+      apisix:
+
+volumes:
+  etcd_data:
+    driver: local

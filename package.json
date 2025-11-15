@@ -4,24 +4,32 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev",
+    "dev": "turbo dev && turbo run apisix:up && turbo run pg:up",
     "dev:web": "turbo dev --filter=react-app",
     "dev:landing": "turbo dev --filter=landing",
-    "dev:api": "turbo dev --filter=api",
+    "dev:auth": "turbo dev --filter=be-auth",
+    "dev:finance": "turbo dev --filter=be-finance",
+    "apisix:up": "pnpm --filter apisix run apisix:up",
+    "apisix:down": "pnpm --filter apisix run apisix:down",
+    "pg:up": "pnpm --filter postgres run pg:up",
+    "pg:down": "pnpm --filter postgres run pg:down",
     "start": "turbo start",
-    "start:api": "turbo start --filter=api",
+    "start:auth": "turbo start --filter=be-auth",
+    "start:finance": "turbo start --filter=be-finance",
     "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
+    "@nestjs/cli": "^11.0.10",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "prettier": "^3.6.2",
-    "turbo": "^2.5.5",
-    "typescript": "5.7.3",
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
-    "@trivago/prettier-plugin-sort-imports": "^5.2.2"
+    "turbo": "^2.5.8",
+    "typescript": "5.7.3"
   },
   "packageManager": "pnpm@10.4.1",
   "engines": {

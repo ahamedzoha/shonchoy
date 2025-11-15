@@ -1,0 +1,63 @@
+{
+  "total": 2,
+  "list": [
+    {
+      "value": {
+        "name": "wsl2-backend",
+        "update_time": 1760202007,
+        "hash_on": "vars",
+        "checks": {
+          "active": {
+            "port": 4001,
+            "timeout": 1,
+            "host": "172.27.223.199",
+            "healthy": { "interval": 30, "successes": 2, "http_statuses": [200, 302] },
+            "concurrency": 10,
+            "http_path": "/health",
+            "https_verify_certificate": true,
+            "unhealthy": { "http_statuses": [429, 404, 500, 501, 502, 503, 504, 505], "tcp_failures": 2, "timeouts": 3, "interval": 30, "http_failures": 5 },
+            "type": "http"
+          }
+        },
+        "type": "roundrobin",
+        "nodes": { "172.27.223.199:4001": 1 },
+        "id": "1",
+        "create_time": 1760039225,
+        "pass_host": "pass",
+        "scheme": "http"
+      },
+      "key": "/apisix/upstreams/1",
+      "createdIndex": 1073,
+      "modifiedIndex": 1379
+    },
+    {
+      "value": {
+        "name": "be-auth-upstream",
+        "update_time": 1759660307,
+        "hash_on": "vars",
+        "checks": {
+          "active": {
+            "port": 4001,
+            "type": "http",
+            "host": "172.27.223.199",
+            "concurrency": 10,
+            "healthy": { "interval": 30, "http_statuses": [200, 302], "successes": 2 },
+            "http_path": "/auth/health",
+            "https_verify_certificate": true,
+            "unhealthy": { "http_statuses": [429, 404, 500, 501, 502, 503, 504, 505], "tcp_failures": 2, "timeouts": 3, "interval": 30, "http_failures": 5 },
+            "timeout": 1
+          }
+        },
+        "type": "roundrobin",
+        "nodes": { "172.27.223.199:4001": 1 },
+        "id": "be-auth-upstream",
+        "create_time": 1759660307,
+        "scheme": "http",
+        "pass_host": "pass"
+      },
+      "key": "/apisix/upstreams/be-auth-upstream",
+      "createdIndex": 665,
+      "modifiedIndex": 665
+    }
+  ]
+}

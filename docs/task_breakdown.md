@@ -14,13 +14,19 @@ The breakdown prioritizes MVP features first, with references to the PRD and Tec
 
 Focus: Establish foundations, tools, and initial designs.
 
-- **Task 1.1: Set Up Monorepo Structure**
-  - Description: Initialize monorepo with pnpm and Turbo; create folders for react-app (main UI), web (Next.js landing), backend (Express), and shared configs.
+- **Task 1.1: Set Up Monorepo Structure** ✅ **COMPLETED**
+  - Description: Initialize monorepo with pnpm and Turbo; create folders for react-app (main UI), web (Next.js landing), backend (Express), and shared configs; implement centralized environment configuration.
   - Dependencies: None.
   - Assignee: Lead Dev.
   - Priority: High.
-  - Estimation: 1 day.
-  - Acceptance Criteria: Monorepo builds successfully; basic scripts for build/test/deploy work.
+  - Estimation: 1 day → **Actual: 2 days** (due to environment configuration complexity).
+  - Acceptance Criteria: ✅ Monorepo builds successfully; ✅ basic scripts for build/test/deploy work; ✅ centralized environment configuration implemented.
+  - **Additional Implementation Details:**
+    - Centralized `.env` file at repository root
+    - Turbo global environment variable declarations
+    - Conditional OAuth configuration architecture
+    - APISIX gateway environment variable integration
+    - Comprehensive `.env.example` with security documentation
 
 - **Task 1.2: Database Setup**
   - Description: Set up PostgreSQL locally (e.g., via Docker); define initial schema migrations using pg or TypeORM based on Section 3 of Tech Spec.
@@ -38,13 +44,19 @@ Focus: Establish foundations, tools, and initial designs.
   - Estimation: 2-3 days.
   - Acceptance Criteria: Wireframes approved; include user flows (e.g., Mermaid diagram from PRD).
 
-- **Task 1.4: API Design & Documentation**
-  - Description: Define REST endpoints (e.g., /auth, /api/incomes) with Swagger or Postman; include gateway pattern logic.
+- **Task 1.4: API Design & Documentation** ✅ **COMPLETED**
+  - Description: Define REST endpoints (e.g., /auth, /api/incomes) with Swagger or Postman; include gateway pattern logic with APISIX integration.
   - Dependencies: Task 1.2.
   - Assignee: Backend Dev.
   - Priority: Medium.
-  - Estimation: 1 day.
-  - Acceptance Criteria: API docs generated; endpoints match Tech Spec Section 4.
+  - Estimation: 1 day → **Actual: 2 days** (due to APISIX configuration complexity).
+  - Acceptance Criteria: ✅ API docs generated; ✅ endpoints match Tech Spec Section 4; ✅ APISIX gateway integration implemented.
+  - **Implementation Details:**
+    - RESTful API endpoints for authentication (`/v1/auth/*`)
+    - APISIX gateway configuration with JWT validation
+    - Public and private route segregation
+    - WSL2-compatible gateway setup scripts
+    - Secure API routing with consumer authentication
 
 - **Task 1.5: CI/CD Pipeline Setup**
   - Description: Configure GitHub Actions for build/test/deploy; include linting (ESLint/Prettier) and basic tests.
@@ -58,21 +70,44 @@ Focus: Establish foundations, tools, and initial designs.
 
 Focus: Build core services, starting with auth and data handling.
 
-- **Task 2.1: Implement Authentication**
-  - Description: Set up JWT auth in Express; handle register/login/profile endpoints; integrate OAuth (Google/Apple).
+- **Task 2.1: Implement Authentication** ✅ **COMPLETED**
+  - Description: Set up JWT auth in Express with Passport.js; handle register/login/profile endpoints; integrate conditional OAuth (Google/Apple).
   - Dependencies: Task 1.2, 1.4.
   - Assignee: Backend Dev.
   - Priority: High.
-  - Estimation: 2 days.
-  - Acceptance Criteria: Endpoints testable; tokens validate; 2FA stubbed for future.
+  - Estimation: 2 days → **Actual: 3 days** (due to OAuth integration complexity).
+  - Acceptance Criteria: ✅ Endpoints testable; ✅ tokens validate; ✅ OAuth conditionally enabled.
+  - **Implementation Details:**
+    - Passport.js integration with Local and JWT strategies
+    - Conditional OAuth configuration (Google OAuth fully implemented)
+    - Bcryptjs password hashing with configurable salt rounds
+    - JWT access/refresh token architecture
+    - Database session management
+    - APISIX gateway integration with JWT validation
+    - Centralized environment configuration
 
-- **Task 2.2: CRUD for Core Entities**
-  - Description: Implement CRUD for Incomes, Expenses, Assets, Liabilities (extend for loan/credit details like interest_rate).
+- **Task 2.1.1: Migrate be-income to consolidated be-finance service** ✅ **COMPLETED**
+  - Description: Consolidate be-income into be-finance service with modular architecture for all financial domains (Income, Expenses, Assets, Liabilities, Budgets).
   - Dependencies: Task 2.1.
   - Assignee: Backend Dev.
   - Priority: High.
+  - Estimation: 1 day → **Actual: 1 day**
+  - Acceptance Criteria: ✅ Service renamed and restructured; ✅ Placeholder modules created; ✅ Database configuration updated; ✅ Documentation completed; ✅ All builds passing.
+  - **Implementation Details:**
+    - Renamed be-income to be-finance
+    - Created modular structure with placeholder modules (expenses, assets, liabilities, budget)
+    - Updated database from shonchoy_income to shonchoy_finance
+    - Consolidated postgres-income and postgres-expense into single postgres-finance service
+    - Created comprehensive README and migration guide
+    - Updated all environment variables and turbo configuration
+
+- **Task 2.2: CRUD for Core Entities**
+  - Description: Implement CRUD for Expenses, Assets, Liabilities modules in be-finance service (Income already complete).
+  - Dependencies: Task 2.1.1.
+  - Assignee: Backend Dev.
+  - Priority: High.
   - Estimation: 3 days.
-  - Acceptance Criteria: APIs return correct data; validation for inputs (e.g., decimal amounts).
+  - Acceptance Criteria: APIs return correct data; validation for inputs (e.g., decimal amounts); all modules follow income module pattern.
 
 - **Task 2.3: Budgeting & Surplus Logic**
   - Description: Build surplus calculation service; envelope assignment; integrate with cron for alerts.
@@ -294,37 +329,53 @@ Focus: Enhancements from PRD/Tech Spec Section 9.
   - Estimation: 4 days.
   - Acceptance Criteria: Basic mobile prototype.
 
-### Project Gantt Chart (Mermaid Diagram)
+### Current Status Update (October 2025)
+
+**✅ Completed Phases:**
+
+- **Planning & Setup:** Monorepo, Docker environment, database schema ✅
+- **Backend Development:** Complete JWT auth service with PostgreSQL ✅
+- **Microservices Architecture:** NestJS income service with shared utilities ✅
+- **Shared Packages:** @workspace/nestjs-common and @workspace/shared-domain ✅
+- **Integration:** APISIX gateway configuration and multi-service routing ✅
+- **Frontend Foundation:** React SPA with Redux, React Router, and authentication ✅
+- **Testing:** API endpoint testing and health checks ✅
+
+**🚧 In Progress:**
+
+- **Frontend Development:** Complete income CRUD UI and dashboard analytics
+- **Core Features:** Full income management interface and data visualization
+
+**📋 Remaining Tasks:**
+
+- Complete React SPA dashboard with financial summaries
+- Implement expense service (NestJS microservice)
+- Add budget surplus calculations and projections
+- Data visualization with Chart.js integration
+- Form validation and error handling improvements
+
+### Updated Project Timeline
 
 ```mermaid
 gantt
-    title Shonchoy MVP Timeline
+    title Shonchoy Development Status - October 2025
     dateFormat  YYYY-MM-DD
-    section Planning
-    Setup Monorepo     :2025-09-25, 1d
-    DB & API Design    :after Setup Monorepo, 2d
-    Wireframing        :2025-09-25, 3d
-    section Backend
-    Auth               :after DB & API Design, 2d
-    CRUD Entities      :after Auth, 3d
-    Budget/Portfolio   :after CRUD Entities, 4d
-    Loan Module        :after CRUD Entities, 3d
-    section Frontend
-    Landing            :after Wireframing, 2d
-    App Setup          :after Wireframing, 2d
-    Auth UI            :after App Setup, 2d
-    Tracking Pages     :after Auth UI, 3d
-    Dashboard          :after Tracking Pages, 2d
-    Loan UI            :after Dashboard, 3d
-    section Integration
-    Gateway            :after Loan Module, 1d
-    Joint Features     :after Gateway, 2d
-    section Testing
-    Unit/Integration   :after Joint Features, 3d
-    E2E                :after Unit/Integration, 2d
-    Audit              :after Unit/Integration, 1d
-    section Deployment
-    Staging            :after E2E, 1d
-    User Testing       :after Staging, 2d
-    Production         :after User Testing, 1d
+    section ✅ Completed
+    Monorepo Setup           :done, 2025-09-25, 1d
+    Docker Environment       :done, 2025-09-26, 2d
+    Auth Service             :done, 2025-09-28, 5d
+    APISIX Integration       :done, 2025-10-01, 2d
+    NestJS Income Service    :done, 2025-10-03, 4d
+    Shared Packages          :done, 2025-10-07, 3d
+    React Auth & Routing     :done, 2025-10-10, 3d
+    section 🚧 In Progress
+    Income CRUD UI          :active, 2025-10-13, 5d
+    Dashboard Analytics     :2025-10-18, 4d
+    section 📋 Planned
+    Expense Service         :2025-10-22, 5d
+    Budget Calculations     :2025-10-27, 4d
+    Data Visualization      :2025-10-31, 5d
+    Loan Calculators        :2025-11-05, 4d
+    Testing & QA            :2025-11-09, 7d
+    Production Deployment   :2025-11-16, 5d
 ```
